@@ -17,39 +17,25 @@
 
 package de.bwravencl.controllerbuddy.input.action;
 
-import de.bwravencl.controllerbuddy.input.Input;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ButtonToButtonAction extends ToButtonAction implements IButtonToActionWithLongPress {
+public interface IActionsParent extends IButtonToAction {
 
-	private float activationValue = DEFAULT_ACTIVATION_VALUE;
-	private boolean longPress = DEFAULT_LONG_PRESS;
+	public static final int UNLIMITED_MAX_ACTIONS = -1;
 
-	@Override
-	public void doAction(final Input input, float value) {
-		value = handleLongPress(value);
-
-		final boolean down = value == activationValue;
-		input.setButtons(buttonId, down ? 1.0f : 0.0f);
+	default public void cloneActions(final IActionsParent actionsParent, final IActionsParent clonedActionsParent)
+			throws CloneNotSupportedException {
+		final List<IAction> clonedActions = new ArrayList<>();
+		for (final IAction a : actionsParent.getActions())
+			clonedActions.add((IAction) a.clone());
+		clonedActionsParent.setActions(clonedActions);
 	}
 
-	@Override
-	public float getActivationValue() {
-		return activationValue;
-	}
+	List<IAction> getActions();
 
-	@Override
-	public boolean isLongPress() {
-		return longPress;
-	}
+	int getMaxActions();
 
-	@Override
-	public void setActivationValue(final Float activationValue) {
-		this.activationValue = activationValue;
-	}
-
-	@Override
-	public void setLongPress(final Boolean longPress) {
-		this.longPress = longPress;
-	}
+	void setActions(final List<IAction> actions);
 
 }

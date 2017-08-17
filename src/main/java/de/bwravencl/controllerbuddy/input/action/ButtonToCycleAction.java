@@ -22,7 +22,7 @@ import java.util.List;
 
 import de.bwravencl.controllerbuddy.input.Input;
 
-public class ButtonToCycleAction implements IButtonToAction, IResetableAction {
+public class ButtonToCycleAction implements IActionsParent, IButtonToActionWithLongPress, IResetableAction {
 
 	private transient boolean wasUp = true;
 	private transient int index = 0;
@@ -33,11 +33,7 @@ public class ButtonToCycleAction implements IButtonToAction, IResetableAction {
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		final ButtonToCycleAction cycleAction = (ButtonToCycleAction) super.clone();
-
-		final List<IAction> clonedActions = new ArrayList<>();
-		for (final IAction a : actions)
-			clonedActions.add((IAction) a.clone());
-		cycleAction.setActions(clonedActions);
+		cloneActions(this, cycleAction);
 
 		return cycleAction;
 	}
@@ -62,6 +58,7 @@ public class ButtonToCycleAction implements IButtonToAction, IResetableAction {
 		}
 	}
 
+	@Override
 	public List<IAction> getActions() {
 		return actions;
 	}
@@ -69,6 +66,11 @@ public class ButtonToCycleAction implements IButtonToAction, IResetableAction {
 	@Override
 	public float getActivationValue() {
 		return activationValue;
+	}
+
+	@Override
+	public int getMaxActions() {
+		return UNLIMITED_MAX_ACTIONS;
 	}
 
 	@Override
@@ -81,6 +83,7 @@ public class ButtonToCycleAction implements IButtonToAction, IResetableAction {
 		index = 0;
 	}
 
+	@Override
 	public void setActions(final List<IAction> actions) {
 		this.actions = actions;
 	}

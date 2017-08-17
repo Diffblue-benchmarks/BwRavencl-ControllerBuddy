@@ -43,7 +43,7 @@ import com.sun.jna.platform.win32.WinDef.HMODULE;
 import de.bwravencl.controllerbuddy.gui.Main;
 import de.bwravencl.controllerbuddy.input.action.ButtonToModeAction;
 import de.bwravencl.controllerbuddy.input.action.IAction;
-import de.bwravencl.controllerbuddy.input.action.IButtonToAction;
+import de.bwravencl.controllerbuddy.input.action.IButtonToActionWithLongPress;
 import de.bwravencl.controllerbuddy.input.action.IInitializationAction;
 import de.bwravencl.controllerbuddy.input.action.IResetableAction;
 import de.bwravencl.controllerbuddy.input.action.ISuspendableAction;
@@ -248,9 +248,9 @@ public class Input {
 				class ActionComparator implements Comparator<IAction> {
 					@Override
 					public int compare(final IAction o1, final IAction o2) {
-						if (o1 instanceof IButtonToAction && o2 instanceof IButtonToAction) {
-							final IButtonToAction buttonToAction1 = (IButtonToAction) o1;
-							final IButtonToAction buttonToAction2 = (IButtonToAction) o2;
+						if (o1 instanceof IButtonToActionWithLongPress && o2 instanceof IButtonToActionWithLongPress) {
+							final IButtonToActionWithLongPress buttonToAction1 = (IButtonToActionWithLongPress) o1;
+							final IButtonToActionWithLongPress buttonToAction2 = (IButtonToActionWithLongPress) o2;
 
 							final boolean o1IsLongPress = buttonToAction1.isLongPress();
 							final boolean o2IsLongPress = buttonToAction2.isLongPress();

@@ -19,7 +19,7 @@ package de.bwravencl.controllerbuddy.input.action;
 
 import de.bwravencl.controllerbuddy.input.Input;
 
-public class ButtonToKeyAction extends ToKeyAction implements IButtonToAction {
+public class ButtonToKeyAction extends ToKeyAction implements IButtonToActionWithLongPress {
 
 	private boolean longPress = DEFAULT_LONG_PRESS;
 	private float activationValue = DEFAULT_ACTIVATION_VALUE;

@@ -18,7 +18,7 @@ package de.bwravencl.controllerbuddy.input.action;
 
 import de.bwravencl.controllerbuddy.input.Input;
 
-public class ButtonToRelativeAxisReset extends ToAxisAction implements IButtonToAction {
+public class ButtonToRelativeAxisReset extends ToAxisAction implements IButtonToActionWithLongPress {
 
 	private static final float DEFAULT_RESET_VALUE = 0.0f;
 

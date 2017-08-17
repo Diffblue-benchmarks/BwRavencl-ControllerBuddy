@@ -20,7 +20,7 @@ package de.bwravencl.controllerbuddy.input.action;
 import de.bwravencl.controllerbuddy.input.Input;
 import de.bwravencl.controllerbuddy.input.LockKey;
 
-public class ButtonToLockKeyAction implements IButtonToAction {
+public class ButtonToLockKeyAction implements IButtonToActionWithLongPress {
 
 	private float activationValue = DEFAULT_ACTIVATION_VALUE;
 	private boolean longPress = DEFAULT_LONG_PRESS;

@@ -72,7 +72,9 @@ import de.bwravencl.controllerbuddy.input.ScanCode;
 import de.bwravencl.controllerbuddy.input.action.AxisToCursorAction.MouseAxis;
 import de.bwravencl.controllerbuddy.input.action.ButtonToCycleAction;
 import de.bwravencl.controllerbuddy.input.action.ButtonToModeAction;
+import de.bwravencl.controllerbuddy.input.action.ButtonToWheelAction;
 import de.bwravencl.controllerbuddy.input.action.IAction;
+import de.bwravencl.controllerbuddy.input.action.IActionsParent;
 import net.brockmatt.util.ResourceBundleUtil;
 import net.java.games.input.Component;
 
@@ -110,8 +112,10 @@ public class EditActionsDialog extends JDialog {
 						componentToActionMap.put(componentName, new ArrayList<>());
 
 					componentToActionMap.get(componentName).add(action);
-				} else
-					cycleActions.add(action);
+				} else {
+					ownedActions.add(action);
+					handleMaxActions();
+				}
 
 				updateAvailableActions();
 				updateAssignedActions();
@@ -192,8 +196,8 @@ public class EditActionsDialog extends JDialog {
 
 		@Override
 		public void actionPerformed(final ActionEvent e) {
-			final EditActionsDialog editComponentDialog = new EditActionsDialog(
-					(ButtonToCycleAction) selectedAssignedAction, input);
+			final EditActionsDialog editComponentDialog = new EditActionsDialog((IActionsParent) selectedAssignedAction,
+					input);
 			editComponentDialog.setVisible(true);
 		}
 
@@ -341,7 +345,7 @@ public class EditActionsDialog extends JDialog {
 				Input.setProfile(unsavedProfile, input.getController());
 				main.setUnsavedChanges(true);
 			} else
-				cycleAction.setActions(cycleActions);
+				parentAction.setActions(ownedActions);
 
 			closeDialog();
 		}
@@ -373,8 +377,10 @@ public class EditActionsDialog extends JDialog {
 
 				if (actions.size() == 0)
 					componentToActionMap.remove(component.getName());
-			} else
-				cycleActions.remove(selectedAssignedAction);
+			} else {
+				ownedActions.remove(selectedAssignedAction);
+				handleMaxActions();
+			}
 
 			updateAvailableActions();
 			updateAssignedActions();
@@ -395,10 +401,14 @@ public class EditActionsDialog extends JDialog {
 			ACTION_CLASS_PREFIX + "ButtonToCycleAction", ACTION_CLASS_PREFIX + "ButtonToKeyAction",
 			ACTION_CLASS_PREFIX + "ButtonToLockKeyAction", ACTION_CLASS_PREFIX + "ButtonToModeAction",
 			ACTION_CLASS_PREFIX + "ButtonToMouseButtonAction", ACTION_CLASS_PREFIX + "ButtonToRelativeAxisReset",
-			ACTION_CLASS_PREFIX + "ButtonToScrollAction" };
+			ACTION_CLASS_PREFIX + "ButtonToScrollAction", ACTION_CLASS_PREFIX + "ButtonToWheelAction" };
 	private static final String[] ACTION_CLASSES_CYCLE_ACTION = { ACTION_CLASS_PREFIX + "ButtonToButtonAction",
 			ACTION_CLASS_PREFIX + "ButtonToKeyAction", ACTION_CLASS_PREFIX + "ButtonToMouseButtonAction",
 			ACTION_CLASS_PREFIX + "ButtonToRelativeAxisReset", ACTION_CLASS_PREFIX + "ButtonToScrollAction" };
+	private static final String[] ACTION_CLASSES_WHEEL_ACTION = { ACTION_CLASS_PREFIX + "ButtonToButtonAction",
+			ACTION_CLASS_PREFIX + "ButtonToKeyAction", ACTION_CLASS_PREFIX + "ButtonToMouseButtonAction",
+			ACTION_CLASS_PREFIX + "ButtonToRelativeAxisReset", ACTION_CLASS_PREFIX + "ButtonToScrollAction",
+			ACTION_CLASS_PREFIX + "ButtonToWheelAction" };
 	private static final String ACTION_PROPERTY_GETTER_PREFIX_DEFAULT = "get";
 	private static final String ACTION_PROPERTY_GETTER_PREFIX_BOOLEAN = "is";
 	private static final String ACTION_PROPERTY_SETTER_PREFIX = "set";
@@ -422,11 +432,12 @@ public class EditActionsDialog extends JDialog {
 	}
 
 	private Main main;
+
 	private Component component;
 	private Input input;
 	private Profile unsavedProfile;
-	private ButtonToCycleAction cycleAction;
-	private final List<IAction> cycleActions = new ArrayList<>();
+	private IActionsParent parentAction;
+	private final List<IAction> ownedActions = new ArrayList<>();
 	private Mode selectedMode;
 	private AvailableAction selectedAvailableAction;
 	private IAction selectedAssignedAction;
@@ -435,18 +446,18 @@ public class EditActionsDialog extends JDialog {
 	private final JList<AvailableAction> availableActionsList = new JList<>();
 	private final JList<IAction> assignedActionsList = new JList<>();
 
-	public EditActionsDialog(final ButtonToCycleAction cycleAction, final Input input) {
-		this.cycleAction = cycleAction;
+	public EditActionsDialog(final IActionsParent parentAction, final Input input) {
+		this.parentAction = parentAction;
 
 		try {
-			for (final IAction a : cycleAction.getActions())
-				cycleActions.add((IAction) a.clone());
+			for (final IAction a : parentAction.getActions())
+				ownedActions.add((IAction) a.clone());
 
 			preInit();
 
 			setBounds(DIALOG_BOUNDS_X + Main.DIALOG_BOUNDS_X_Y_OFFSET, DIALOG_BOUNDS_Y + Main.DIALOG_BOUNDS_X_Y_OFFSET,
 					DIALOG_BOUNDS_WIDTH, DIALOG_BOUNDS_HEIGHT);
-			setTitle(cycleAction.toString() + rb.getString("EDIT_ACTIONS_DIALOG_TITLE_CYCLE_ACTION_EDITOR_SUFFIX"));
+			setTitle(parentAction.toString() + rb.getString("EDIT_ACTIONS_DIALOG_TITLE_CYCLE_ACTION_EDITOR_SUFFIX"));
 
 			init(input);
 		} catch (final CloneNotSupportedException e) {
@@ -507,7 +518,7 @@ public class EditActionsDialog extends JDialog {
 		if (isComponentEditor())
 			assignedActions = selectedMode.getComponentToActionsMap().get(component.getName());
 		else
-			assignedActions = cycleActions;
+			assignedActions = ownedActions;
 
 		final List<IAction> clonedAssignedActions = new ArrayList<>();
 		if (assignedActions != null)
@@ -522,6 +533,15 @@ public class EditActionsDialog extends JDialog {
 		}
 
 		return clonedAssignedActions.toArray(new IAction[clonedAssignedActions.size()]);
+	}
+
+	private void handleMaxActions() {
+		if (parentAction == null)
+			return;
+
+		final int maxActions = parentAction.getMaxActions();
+		availableActionsList
+				.setEnabled(maxActions == IActionsParent.UNLIMITED_MAX_ACTIONS || ownedActions.size() < maxActions);
 	}
 
 	private boolean hasModeAction() {
@@ -692,11 +712,23 @@ public class EditActionsDialog extends JDialog {
 									spinner2.addChangeListener(new JSpinnerSetPropertyChangeListener(m));
 									propertyPanel.add(spinner2);
 									if (!isComponentEditor() && "ActivationValue".equals(propertyName)) {
-										final float parentActivationValue = cycleAction.getActivationValue();
+										final float parentActivationValue = parentAction.getActivationValue();
 										m.invoke(selectedAssignedAction, parentActivationValue);
 										spinner2.setValue(parentActivationValue);
 										spinner2.setEnabled(false);
 									}
+								} else if (String.class == clazz) {
+									final JComboBox<String> comboBox1 = new JComboBox<>();
+									for (final Component c : Input.getComponents(input.getController()))
+										if (c.isAnalog())
+											comboBox1.addItem(c.getIdentifier().getName());
+									comboBox1.setAction(new JComboBoxSetPropertyAction(m));
+									final Object selectedItem = getterMethod.invoke(selectedAssignedAction);
+									if (selectedItem != null)
+										comboBox1.setSelectedItem(selectedItem);
+									else
+										comboBox1.setSelectedIndex(m.getName().startsWith("setx") ? 0 : 1);
+									propertyPanel.add(comboBox1);
 								} else if (Mode.class == clazz) {
 									final JComboBox<Mode> comboBox1 = new JComboBox<>();
 									for (final Mode p : Input.getProfile().getModes())
@@ -834,8 +866,12 @@ public class EditActionsDialog extends JDialog {
 				actionClasses = ACTION_CLASSES_AXIS;
 			else
 				actionClasses = ACTION_CLASSES_BUTTON;
-		} else
+		} else if (parentAction instanceof ButtonToCycleAction)
 			actionClasses = ACTION_CLASSES_CYCLE_ACTION;
+		else if (parentAction instanceof ButtonToWheelAction)
+			actionClasses = ACTION_CLASSES_WHEEL_ACTION;
+		else
+			actionClasses = new String[0];
 
 		for (final String s : actionClasses) {
 			final AvailableAction availableAction = new AvailableAction(s);

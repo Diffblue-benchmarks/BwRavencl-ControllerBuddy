@@ -19,7 +19,7 @@ package de.bwravencl.controllerbuddy.input.action;
 
 import de.bwravencl.controllerbuddy.input.Input;
 
-public class ButtonToScrollAction extends ToScrollAction implements IButtonToAction {
+public class ButtonToScrollAction extends ToScrollAction implements IButtonToActionWithLongPress {
 
 	public static final float DEFAULT_ACTIVATION_VALUE = 1.0f;
 

@@ -28,7 +28,7 @@ import de.bwravencl.controllerbuddy.input.Mode;
 import de.bwravencl.controllerbuddy.input.Profile;
 import net.java.games.input.Component;
 
-public class ButtonToModeAction implements IButtonToAction {
+public class ButtonToModeAction implements IButtonToActionWithLongPress {
 
 	private static final LinkedList<ButtonToModeAction> buttonToModeActionStack = new LinkedList<>();
 

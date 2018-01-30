@@ -708,7 +708,7 @@ public final class Main {
 	private static final String[] ICON_RESOURCE_PATHS = { "/icon_16.png", "/icon_32.png", "/icon_64.png",
 			"/icon_128.png" };
 	private static final String KEYBOARD_ICON_RESOURCE_PATH = "/keyboard.png";
-	private static final String ON_SCREEN_KEYBOARD_EXECUTABLE = "osk.exe";
+	protected static final Color TRANSPARENT = new Color(255, 255, 255, 0);
 	private static final ResourceBundle rb = new ResourceBundleUtil().getResourceBundle(STRING_RESOURCE_BUNDLE_BASENAME,
 			Locale.getDefault());
 	private static final Map<VirtualAxis, JProgressBar> virtualAxisToProgressBarMap = new HashMap<>();
@@ -820,6 +820,8 @@ public final class Main {
 	private final JPanel settingsPanel;
 	private final JScrollPane indicatorsScrollPane;
 	private final JPanel indicatorsListPanel;
+	private final OnScreenKeyboard onScreenKeyboard = new OnScreenKeyboard();
+	private TimerTask overlayTimerTask;
 	private JLabel vJoyDirectoryLabel1;
 	private JTextField hostTextField;
 	private final JLabel statusLabel = new JLabel(rb.getString("STATUS_READY"));
@@ -828,7 +830,6 @@ public final class Main {
 	private String loadedProfile = null;
 	private File currentFile;
 	private ServerSocket serverSocket;
-	private Process onScreenKeyboardProcess;
 	private final JFileChooser fileChooser = new JFileChooser() {
 		/**
 		 *
@@ -1376,6 +1377,8 @@ public final class Main {
 		}
 
 		virtualAxisToProgressBarMap.clear();
+
+		onScreenKeyboard.setVisible(false);
 	}
 
 	public void displayChargingStateInfo(final boolean charging) {
@@ -1421,7 +1424,7 @@ public final class Main {
 			overlayFrame.setLayout(new BorderLayout());
 			overlayFrame.setFocusableWindowState(false);
 			overlayFrame.setUndecorated(true);
-			overlayFrame.setBackground(new Color(255, 255, 255, 0));
+			overlayFrame.setBackground(TRANSPARENT);
 
 			if (isWindows()) {
 				final Icon icon = new ImageIcon(Main.class.getResource(KEYBOARD_ICON_RESOURCE_PATH));
@@ -1440,7 +1443,7 @@ public final class Main {
 		overlayFrame.setAlwaysOnTop(true);
 
 		indicatorPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		indicatorPanel.setBackground(new Color(255, 255, 255, 0));
+		indicatorPanel.setBackground(TRANSPARENT);
 
 		for (final VirtualAxis va : Input.VirtualAxis.values()) {
 			final Map<VirtualAxis, Color> virtualAxisToColorMap = Input.getProfile().getVirtualAxisToColorMap();
@@ -1463,25 +1466,6 @@ public final class Main {
 
 		updateOverlayLocation();
 		overlayFrame.setVisible(true);
-
-		new Timer().schedule(new TimerTask() {
-
-			@Override
-			public void run() {
-				if (overlayFrame != null && overlayFrame.isAlwaysOnTop() && !isModalDialogShowing()) {
-					overlayFrame.setAlwaysOnTop(false);
-					overlayFrame.setAlwaysOnTop(true);
-				}
-
-				final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-				if (prevScreenSize == null || screenSize.width != prevScreenSize.width
-						|| screenSize.height != prevScreenSize.height) {
-					prevScreenSize = screenSize;
-					updateOverlayLocation();
-				}
-			}
-		}, OVERLAY_POSITION_UPDATE_INTERVAL, OVERLAY_POSITION_UPDATE_INTERVAL);
-
 	}
 
 	private boolean loadProfile(final File file) {
@@ -1661,6 +1645,8 @@ public final class Main {
 
 		if (preferences.getBoolean(PREFERENCES_SHOW_OVERLAY, true))
 			initOverlay();
+
+		startOverlayTimerTask();
 	}
 
 	public void startLocal() {
@@ -1682,6 +1668,41 @@ public final class Main {
 
 		if (preferences.getBoolean(PREFERENCES_SHOW_OVERLAY, true))
 			initOverlay();
+
+		startOverlayTimerTask();
+	}
+
+	private void startOverlayTimerTask() {
+		stopOverlayTimerTask();
+
+		overlayTimerTask = new TimerTask() {
+
+			@Override
+			public void run() {
+				if (isModalDialogShowing()) {
+					if (overlayFrame != null) {
+						overlayFrame.setAlwaysOnTop(false);
+						overlayFrame.setAlwaysOnTop(true);
+					}
+
+					if (onScreenKeyboard.isVisible()) {
+						onScreenKeyboard.setAlwaysOnTop(false);
+						onScreenKeyboard.setAlwaysOnTop(true);
+					}
+				}
+
+				final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+				if (prevScreenSize == null || screenSize.width != prevScreenSize.width
+						|| screenSize.height != prevScreenSize.height) {
+					prevScreenSize = screenSize;
+
+					updateOverlayLocation();
+					onScreenKeyboard.updateLocation();
+				}
+			}
+		};
+
+		new Timer().schedule(overlayTimerTask, OVERLAY_POSITION_UPDATE_INTERVAL, OVERLAY_POSITION_UPDATE_INTERVAL);
 	}
 
 	public void startServer() {
@@ -1741,6 +1762,7 @@ public final class Main {
 		if (resetLastOutputType)
 			lastOutputType = OUTPUT_TYPE_NONE;
 
+		stopOverlayTimerTask();
 		deInitOverlay();
 	}
 
@@ -1770,7 +1792,13 @@ public final class Main {
 		if (resetLastOutputType)
 			lastOutputType = OUTPUT_TYPE_NONE;
 
+		stopOverlayTimerTask();
 		deInitOverlay();
+	}
+
+	private void stopOverlayTimerTask() {
+		if (overlayTimerTask != null)
+			overlayTimerTask.cancel();
 	}
 
 	public void stopServer(final boolean resetLastOutputType) {
@@ -1803,17 +1831,7 @@ public final class Main {
 	}
 
 	public void toggleOnScreenKeyboard() {
-		try {
-			if (onScreenKeyboardProcess != null && onScreenKeyboardProcess.isAlive())
-				onScreenKeyboardProcess.destroy();
-			else
-				onScreenKeyboardProcess = new ProcessBuilder(ON_SCREEN_KEYBOARD_EXECUTABLE).start();
-		} catch (final IOException e1) {
-			onScreenKeyboardProcess = null;
-			e1.printStackTrace();
-			JOptionPane.showMessageDialog(frame, rb.getString("ON_SCREEN_KEYBOARD_LAUNCH_ERROR_DIALOG_TEXT"),
-					rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
-		}
+		onScreenKeyboard.setVisible(!onScreenKeyboard.isVisible());
 	}
 
 	protected void updateModesPanel() {

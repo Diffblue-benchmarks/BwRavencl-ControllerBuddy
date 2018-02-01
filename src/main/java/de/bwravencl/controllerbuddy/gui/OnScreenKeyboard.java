@@ -175,12 +175,12 @@ public class OnScreenKeyboard extends JFrame {
 					new KeyboardButton(ScanCode.D3), new KeyboardButton(ScanCode.D4), new KeyboardButton(ScanCode.D5),
 					new KeyboardButton(ScanCode.D6), new KeyboardButton(ScanCode.D7), new KeyboardButton(ScanCode.D8),
 					new KeyboardButton(ScanCode.D9), new KeyboardButton(ScanCode.D0),
-					new KeyboardButton(ScanCode.SUBTRACT), new KeyboardButton(ScanCode.ADD) } };;
+					new KeyboardButton(ScanCode.SUBTRACT), new KeyboardButton(ScanCode.ADD) } };
+
+	private boolean anyChanges = false;
 
 	private int selectedRow = 0;
 	private int selectedColumn = 0;
-
-	private boolean anyChanges = false;
 
 	public OnScreenKeyboard() {
 		setType(JFrame.Type.UTILITY);
@@ -196,7 +196,7 @@ public class OnScreenKeyboard extends JFrame {
 			final JPanel rowPanel = new JPanel();
 			rowPanel.setBackground(ROW_BACKGROUND);
 			rowPanel.setBorder(
-					BorderFactory.createEmptyBorder(row == 0 ? 5 : 0, 5, row == keyboardButtons.length ? 5 : 0, 5));
+					BorderFactory.createEmptyBorder(row == 0 ? 5 : 0, 5, row == keyboardButtons.length - 1 ? 5 : 0, 5));
 
 			for (int column = 0; column < keyboardButtons[row].length; column++)
 				rowPanel.add(keyboardButtons[row][column]);

@@ -41,6 +41,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.WinDef.HMODULE;
 
 import de.bwravencl.controllerbuddy.gui.Main;
+import de.bwravencl.controllerbuddy.gui.OnScreenKeyboard;
 import de.bwravencl.controllerbuddy.input.action.ButtonToModeAction;
 import de.bwravencl.controllerbuddy.input.action.IAction;
 import de.bwravencl.controllerbuddy.input.action.IButtonToAction;
@@ -453,6 +454,10 @@ public class Input {
 	public boolean poll() {
 		if (!controller.poll())
 			return false;
+
+		final OnScreenKeyboard onScreenKeyboard = main.getOnScreenKeyboard();
+		if (onScreenKeyboard.isVisible())
+			onScreenKeyboard.poll(this);
 
 		final List<Mode> modes = profile.getModes();
 		final Map<String, List<IAction>> componentToActionMap = profile.getActiveMode().getComponentToActionsMap();

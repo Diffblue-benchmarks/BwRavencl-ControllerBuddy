@@ -136,9 +136,6 @@ public final class Main {
 
 	private class AddModeAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -4881923833724315489L;
 
 		public AddModeAction() {
@@ -159,9 +156,6 @@ public final class Main {
 
 	private class ChangeVJoyDirectoryAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -7672382299595684105L;
 
 		public ChangeVJoyDirectoryAction() {
@@ -195,9 +189,6 @@ public final class Main {
 
 	private class DisplayIndicatorAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 3316770144012465987L;
 
 		private final VirtualAxis virtualAxis;
@@ -224,9 +215,6 @@ public final class Main {
 
 	private class EditComponentAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 8811608785278071903L;
 
 		private final Component component;
@@ -251,9 +239,6 @@ public final class Main {
 
 	private class NewAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 5703987691203427504L;
 
 		public NewAction() {
@@ -270,9 +255,6 @@ public final class Main {
 
 	private class OpenAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -8932510785275935297L;
 
 		public OpenAction() {
@@ -295,9 +277,6 @@ public final class Main {
 
 	private class QuitAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 8952460723177800923L;
 
 		public QuitAction() {
@@ -314,9 +293,6 @@ public final class Main {
 
 	private class RemoveModeAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -1056071724769862582L;
 
 		private final Mode mode;
@@ -340,9 +316,6 @@ public final class Main {
 
 	private class SaveAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -8469921697479550983L;
 
 		public SaveAction() {
@@ -362,9 +335,6 @@ public final class Main {
 
 	private class SaveAsAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -8469921697479550983L;
 
 		public SaveAsAction() {
@@ -381,9 +351,6 @@ public final class Main {
 
 	private class SelectControllerAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -2043467156713598592L;
 
 		private final Controller controller;
@@ -406,9 +373,6 @@ public final class Main {
 
 	private class SelectIndicatorColorAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 3316770144012465987L;
 
 		private final VirtualAxis virtualAxis;
@@ -435,9 +399,6 @@ public final class Main {
 
 	private class SetHostAction extends AbstractAction implements FocusListener {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -7674562782751876814L;
 
 		private final JTextField hostTextField;
@@ -473,9 +434,6 @@ public final class Main {
 
 	private class SetModeDescriptionAction extends AbstractAction implements DocumentListener {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -6706537047137827688L;
 
 		private final Mode mode;
@@ -519,9 +477,6 @@ public final class Main {
 
 	private class ShowAboutDialogAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -2578971543384483382L;
 
 		public ShowAboutDialogAction() {
@@ -542,9 +497,6 @@ public final class Main {
 
 	private class ShowAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 8578159622754054457L;
 
 		public ShowAction() {
@@ -564,9 +516,6 @@ public final class Main {
 
 	private class StartClientAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 3975574941559749481L;
 
 		public StartClientAction() {
@@ -583,9 +532,6 @@ public final class Main {
 
 	private class StartLocalAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -2003502124995392039L;
 
 		public StartLocalAction() {
@@ -602,9 +548,6 @@ public final class Main {
 
 	private class StartServerAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 1758447420975631146L;
 
 		public StartServerAction() {
@@ -621,9 +564,6 @@ public final class Main {
 
 	private class StopClientAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -2863419586328503426L;
 
 		public StopClientAction() {
@@ -640,9 +580,6 @@ public final class Main {
 
 	private class StopLocalAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -4859431944733030332L;
 
 		public StopLocalAction() {
@@ -659,9 +596,6 @@ public final class Main {
 
 	private class StopServerAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 6023207463370122769L;
 
 		public StopServerAction() {
@@ -831,9 +765,7 @@ public final class Main {
 	private File currentFile;
 	private ServerSocket serverSocket;
 	private final JFileChooser fileChooser = new JFileChooser() {
-		/**
-		 *
-		 */
+
 		private static final long serialVersionUID = -4669170626378955605L;
 
 		@Override

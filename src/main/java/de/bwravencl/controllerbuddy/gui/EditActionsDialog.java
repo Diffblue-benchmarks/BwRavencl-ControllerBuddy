@@ -97,9 +97,6 @@ public class EditActionsDialog extends JDialog {
 
 	private class AddActionAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -7713175853948284887L;
 
 		public AddActionAction() {
@@ -174,9 +171,6 @@ public class EditActionsDialog extends JDialog {
 
 	private class CancelAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 8086810563127997199L;
 
 		public CancelAction() {
@@ -193,9 +187,6 @@ public class EditActionsDialog extends JDialog {
 
 	private class EditActionsAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -6538021954760621595L;
 
 		public EditActionsAction() {
@@ -215,9 +206,6 @@ public class EditActionsDialog extends JDialog {
 
 	private class JCheckBoxSetPropertyAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -33052386834598414L;
 
 		private final Method setterMethod;
@@ -239,9 +227,6 @@ public class EditActionsDialog extends JDialog {
 
 	private class JComboBoxSetPropertyAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = 1938012378184518954L;
 
 		private final Method setterMethod;
@@ -321,9 +306,6 @@ public class EditActionsDialog extends JDialog {
 
 	private class OKAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -6947022759101822700L;
 
 		public OKAction() {
@@ -347,9 +329,6 @@ public class EditActionsDialog extends JDialog {
 
 	private class RemoveActionAction extends AbstractAction {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -5681740772832902238L;
 
 		public RemoveActionAction() {
@@ -488,9 +467,6 @@ public class EditActionsDialog extends JDialog {
 			final JComboBox<Mode> modeComboBox = new JComboBox<>(modes.toArray(new Mode[modes.size()]));
 			modeComboBox.addActionListener(new AbstractAction() {
 
-				/**
-				 *
-				 */
 				private static final long serialVersionUID = -9107064465015662054L;
 
 				@Override

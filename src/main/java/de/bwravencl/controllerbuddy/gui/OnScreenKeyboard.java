@@ -18,12 +18,10 @@
 package de.bwravencl.controllerbuddy.gui;
 
 import java.awt.Color;
-import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.geom.RoundRectangle2D;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -50,25 +48,13 @@ import net.brockmatt.util.ResourceBundleUtil;
 
 public class OnScreenKeyboard extends JFrame {
 
-	private static class KeyboardButton extends JButton {
+	private class KeyboardButton extends JButton {
 
 		private static final long serialVersionUID = 4608180593368737289L;
 
 		private static final long MIN_LONG_CLICK_TIME = 500L;
 
-		private static final Color DEFAULT_BACKGROUND = new JButton().getBackground();
-
-		private static final Color DEFAULT_FOREGROUND = new JButton().getForeground();
-
-		private static final Color HELD_BACKGROUND = new Color(128, 128, 128);
-
-		private static final Set<KeyboardButton> heldButtons = new HashSet<>();
-
-		protected static void releaseAll() {
-			for (final KeyboardButton[] row : keyboardButtons)
-				for (final KeyboardButton kb : row)
-					kb.release();
-		}
+		private boolean changed = false;
 
 		private final KeyStroke keyStroke;
 
@@ -101,7 +87,7 @@ public class OnScreenKeyboard extends JFrame {
 							releaseAll();
 							beginPress = 0L;
 						} else
-							KeyboardButton.this.setForeground(DEFAULT_FOREGROUND);
+							KeyboardButton.this.setForeground(KEYBOARD_BUTTON_DEFAULT_FOREGROUND);
 
 						lastPressed = pressed;
 					}
@@ -110,20 +96,36 @@ public class OnScreenKeyboard extends JFrame {
 		}
 
 		protected void poll(final Input input) {
-			if (heldButtons.contains(this))
-				input.getDownKeyStrokes().add(keyStroke);
+			if (changed) {
+				final Set<KeyStroke> downKeyStrokes = input.getDownKeyStrokes();
+
+				if (heldButtons.contains(this))
+					downKeyStrokes.add(keyStroke);
+				else
+					downKeyStrokes.remove(keyStroke);
+			}
 		}
 
 		protected void press() {
-			setBackground(HELD_BACKGROUND);
-			if (heldButtons.add(this))
-				System.out.println("Start hold " + getText());
+			setBackground(KEYBOARD_BUTTON_HELD_BACKGROUND);
+			if (heldButtons.add(this)) {
+				changed = true;
+				anyChanges = true;
+			}
 		}
 
 		protected void release() {
-			setBackground(DEFAULT_BACKGROUND);
-			if (heldButtons.remove(this))
-				System.out.println("End hold " + getText());
+			setBackground(KEYBOARD_BUTTON_DEFAULT_BACKGROUND);
+			if (heldButtons.remove(this)) {
+				changed = true;
+				anyChanges = true;
+			}
+		}
+
+		protected void releaseAll() {
+			for (final KeyboardButton[] row : keyboardButtons)
+				for (final KeyboardButton kb : row)
+					kb.release();
 		}
 
 		protected void toggleLock() {
@@ -135,6 +137,14 @@ public class OnScreenKeyboard extends JFrame {
 
 	}
 
+	private static final Color KEYBOARD_BUTTON_DEFAULT_BACKGROUND = new JButton().getBackground();
+
+	private static final Color KEYBOARD_BUTTON_DEFAULT_FOREGROUND = new JButton().getForeground();
+
+	private static final Color KEYBOARD_BUTTON_HELD_BACKGROUND = new Color(128, 128, 128);
+
+	private static final Set<KeyboardButton> heldButtons = new HashSet<>();
+
 	private static final long serialVersionUID = -111088315813179371L;
 
 	private static final UUID ON_SCREEN_KEYBOARD_MODE_UUID = UUID.fromString("daf53639-9518-48db-bd63-19cde7bf9a96");
@@ -142,18 +152,6 @@ public class OnScreenKeyboard extends JFrame {
 	public static final Mode onScreenKeyboardMode;
 
 	private static final Color ROW_BACKGROUND = new Color(255, 255, 255, 64);
-
-	private static final KeyboardButton[][] keyboardButtons = {
-			{ new KeyboardButton(ScanCode.ESCAPE), new KeyboardButton(ScanCode.F1), new KeyboardButton(ScanCode.F2),
-					new KeyboardButton(ScanCode.F3), new KeyboardButton(ScanCode.F4), new KeyboardButton(ScanCode.F5),
-					new KeyboardButton(ScanCode.F6), new KeyboardButton(ScanCode.F7), new KeyboardButton(ScanCode.F8),
-					new KeyboardButton(ScanCode.F9), new KeyboardButton(ScanCode.F10), new KeyboardButton(ScanCode.F11),
-					new KeyboardButton(ScanCode.F12) },
-			{ new KeyboardButton(ScanCode.APOSTROPHE), new KeyboardButton(ScanCode.D1), new KeyboardButton(ScanCode.D2),
-					new KeyboardButton(ScanCode.D3), new KeyboardButton(ScanCode.D4), new KeyboardButton(ScanCode.D5),
-					new KeyboardButton(ScanCode.D6), new KeyboardButton(ScanCode.D7), new KeyboardButton(ScanCode.D8),
-					new KeyboardButton(ScanCode.D9), new KeyboardButton(ScanCode.D0),
-					new KeyboardButton(ScanCode.SUBTRACT), new KeyboardButton(ScanCode.ADD) } };
 
 	private static final Border defaultButtonBorder = UIManager.getBorder("Button.border");
 
@@ -167,14 +165,22 @@ public class OnScreenKeyboard extends JFrame {
 		onScreenKeyboardMode.setDescription(rb.getString("ON_SCREEN_KEYBOARD_MODE_DESCRIPTION"));
 	}
 
-	public static void main(final String[] args) throws IOException {
-		EventQueue.invokeLater(() -> {
-			new OnScreenKeyboard();
-		});
-	};
+	private final KeyboardButton[][] keyboardButtons = {
+			{ new KeyboardButton(ScanCode.ESCAPE), new KeyboardButton(ScanCode.F1), new KeyboardButton(ScanCode.F2),
+					new KeyboardButton(ScanCode.F3), new KeyboardButton(ScanCode.F4), new KeyboardButton(ScanCode.F5),
+					new KeyboardButton(ScanCode.F6), new KeyboardButton(ScanCode.F7), new KeyboardButton(ScanCode.F8),
+					new KeyboardButton(ScanCode.F9), new KeyboardButton(ScanCode.F10), new KeyboardButton(ScanCode.F11),
+					new KeyboardButton(ScanCode.F12) },
+			{ new KeyboardButton(ScanCode.APOSTROPHE), new KeyboardButton(ScanCode.D1), new KeyboardButton(ScanCode.D2),
+					new KeyboardButton(ScanCode.D3), new KeyboardButton(ScanCode.D4), new KeyboardButton(ScanCode.D5),
+					new KeyboardButton(ScanCode.D6), new KeyboardButton(ScanCode.D7), new KeyboardButton(ScanCode.D8),
+					new KeyboardButton(ScanCode.D9), new KeyboardButton(ScanCode.D0),
+					new KeyboardButton(ScanCode.SUBTRACT), new KeyboardButton(ScanCode.ADD) } };;
 
 	private int selectedRow = 0;
 	private int selectedColumn = 0;
+
+	private boolean anyChanges = false;
 
 	public OnScreenKeyboard() {
 		setType(JFrame.Type.UTILITY);
@@ -201,45 +207,6 @@ public class OnScreenKeyboard extends JFrame {
 		focusCurrentButton();
 		add(parentPanel);
 		updateLocation();
-
-		// new Thread() {
-		//
-		// @Override
-		// public void run() {
-		// while (true) {
-		// final int randomNum = ThreadLocalRandom.current().nextInt(0, 5 + 1);
-		// switch (randomNum) {
-		// case 0:
-		// up();
-		// break;
-		// case 1:
-		// left();
-		// break;
-		// case 2:
-		// right();
-		// break;
-		// case 3:
-		// down();
-		// break;
-		// case 4:
-		// hold();
-		// break;
-		// case 5:
-		// release();
-		// break;
-		// default:
-		// break;
-		// }
-		//
-		// try {
-		// Thread.sleep(250L);
-		// } catch (final InterruptedException e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// }
-		//
-		// }.start();
 	}
 
 	private void focusCurrentButton() {
@@ -281,9 +248,10 @@ public class OnScreenKeyboard extends JFrame {
 	}
 
 	public void poll(final Input input) {
-		for (final KeyboardButton[] row : keyboardButtons)
-			for (final KeyboardButton kb : row)
-				kb.poll(input);
+		if (anyChanges)
+			for (final KeyboardButton[] row : keyboardButtons)
+				for (final KeyboardButton kb : row)
+					kb.poll(input);
 	}
 
 	public void press() {

@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import de.bwravencl.controllerbuddy.gui.OnScreenKeyboard;
 import de.bwravencl.controllerbuddy.input.Input;
 import de.bwravencl.controllerbuddy.input.Mode;
 import de.bwravencl.controllerbuddy.input.Profile;
@@ -36,7 +37,7 @@ public class ButtonToModeAction implements IButtonToAction {
 		return buttonToModeActionStack;
 	}
 
-	private boolean toggle = false;
+	protected boolean toggle = false;
 	private transient boolean up = true;
 	private boolean longPress = DEFAULT_LONG_PRESS;
 	private float activationValue = DEFAULT_ACTIVATION_VALUE;
@@ -53,6 +54,9 @@ public class ButtonToModeAction implements IButtonToAction {
 		if (!buttonToModeActionStack.contains(this)) {
 			buttonToModeActionStack.push(this);
 			profile.setActiveMode(input, modeUuid);
+
+			if (targetsOnScreenKeyboardMode())
+				input.getMain().toggleOnScreenKeyboard();
 		}
 	}
 
@@ -116,6 +120,9 @@ public class ButtonToModeAction implements IButtonToAction {
 
 			profile.setActiveMode(input, previousMode.getUuid());
 			input.getDownKeyStrokes().clear();
+
+			if (targetsOnScreenKeyboardMode())
+				input.getMain().toggleOnScreenKeyboard();
 		}
 	}
 
@@ -133,12 +140,12 @@ public class ButtonToModeAction implements IButtonToAction {
 			if (up) {
 				if (profile.getActiveMode().getUuid().equals(modeUuid))
 					deactivateMode(input, profile);
-				else if (Profile.isDefaultMode(profile.getActiveMode()) || componentNotUsedByActiveModes(input))
+				else if (Profile.defaultMode.equals(profile.getActiveMode()) || componentNotUsedByActiveModes(input))
 					activateMode(input, profile);
 
 				up = false;
 			}
-		} else if (Profile.isDefaultMode(profile.getActiveMode()) || componentNotUsedByActiveModes(input))
+		} else if (Profile.defaultMode.equals(profile.getActiveMode()) || componentNotUsedByActiveModes(input))
 			activateMode(input, profile);
 	}
 
@@ -180,6 +187,10 @@ public class ButtonToModeAction implements IButtonToAction {
 
 	public void setToggle(final Boolean toggle) {
 		this.toggle = toggle;
+	}
+
+	public boolean targetsOnScreenKeyboardMode() {
+		return OnScreenKeyboard.onScreenKeyboardMode.getUuid().equals(modeUuid);
 	}
 
 	@Override

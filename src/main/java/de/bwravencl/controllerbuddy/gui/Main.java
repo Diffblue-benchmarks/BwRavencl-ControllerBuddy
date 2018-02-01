@@ -1399,6 +1399,10 @@ public final class Main {
 		return frame;
 	}
 
+	public OnScreenKeyboard getOnScreenKeyboard() {
+		return onScreenKeyboard;
+	}
+
 	public Preferences getPreferences() {
 		return preferences;
 	}
@@ -1838,12 +1842,12 @@ public final class Main {
 		modesListPanel.removeAll();
 
 		final List<Mode> modes = Input.getProfile().getModes();
-		for (final Mode p : modes) {
+		for (final Mode m : modes) {
 			final JPanel modePanel = new JPanel(new GridBagLayout());
 			modesListPanel.add(modePanel, new GridBagConstraints(0, GridBagConstraints.RELATIVE, 1, 1, 0.0, 0.0,
 					GridBagConstraints.FIRST_LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 5));
 
-			final JLabel modeNoLabel = new JLabel(rb.getString("MODE_NO_LABEL_PREFIX") + modes.indexOf(p));
+			final JLabel modeNoLabel = new JLabel(rb.getString("MODE_NO_LABEL_PREFIX") + modes.indexOf(m));
 			modeNoLabel.setPreferredSize(new Dimension(100, 15));
 			modePanel.add(modeNoLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE,
 					GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
@@ -1851,11 +1855,11 @@ public final class Main {
 			modePanel.add(Box.createGlue(), new GridBagConstraints(1, GridBagConstraints.RELATIVE, 1, 1, 1.0, 1.0,
 					GridBagConstraints.BASELINE, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
-			final JTextField descriptionTextField = new JTextField(p.getDescription(), 20);
+			final JTextField descriptionTextField = new JTextField(m.getDescription(), 20);
 			modePanel.add(descriptionTextField, new GridBagConstraints(2, 0, 1, 1, 1.0, 1.0,
 					GridBagConstraints.BASELINE, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
-			final SetModeDescriptionAction setModeDescriptionAction = new SetModeDescriptionAction(p,
+			final SetModeDescriptionAction setModeDescriptionAction = new SetModeDescriptionAction(m,
 					descriptionTextField);
 			descriptionTextField.addActionListener(setModeDescriptionAction);
 			descriptionTextField.getDocument().addDocumentListener(setModeDescriptionAction);
@@ -1863,11 +1867,11 @@ public final class Main {
 			modePanel.add(Box.createGlue(), new GridBagConstraints(3, GridBagConstraints.RELATIVE, 1, 1, 1.0, 1.0,
 					GridBagConstraints.BASELINE, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
-			if (Profile.isDefaultMode(p)) {
+			if (Profile.defaultMode.equals(m) || OnScreenKeyboard.onScreenKeyboardMode.equals(m)) {
 				descriptionTextField.setEditable(false);
 				modePanel.add(Box.createHorizontalStrut(BUTTON_DIMENSION.width));
 			} else {
-				final JButton deleteButton = new JButton(new RemoveModeAction(p));
+				final JButton deleteButton = new JButton(new RemoveModeAction(m));
 				deleteButton.setPreferredSize(BUTTON_DIMENSION);
 				modePanel.add(deleteButton, new GridBagConstraints(4, GridBagConstraints.RELATIVE, 1, 1, 0.0, 0.0,
 						GridBagConstraints.BASELINE, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));

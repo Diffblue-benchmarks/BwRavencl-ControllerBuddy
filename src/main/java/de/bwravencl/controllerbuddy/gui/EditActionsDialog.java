@@ -83,10 +83,13 @@ import de.bwravencl.controllerbuddy.input.action.ButtonToKeyAction;
 import de.bwravencl.controllerbuddy.input.action.ButtonToLockKeyAction;
 import de.bwravencl.controllerbuddy.input.action.ButtonToModeAction;
 import de.bwravencl.controllerbuddy.input.action.ButtonToMouseButtonAction;
-import de.bwravencl.controllerbuddy.input.action.ButtonToOnScreenKeyboardAction;
+import de.bwravencl.controllerbuddy.input.action.ButtonToPressOnScreenKeyboardKeyAction;
 import de.bwravencl.controllerbuddy.input.action.ButtonToRelativeAxisReset;
 import de.bwravencl.controllerbuddy.input.action.ButtonToScrollAction;
+import de.bwravencl.controllerbuddy.input.action.ButtonToSelectOnScreenKeyboardKeyAction;
+import de.bwravencl.controllerbuddy.input.action.ButtonToSelectOnScreenKeyboardKeyAction.Direction;
 import de.bwravencl.controllerbuddy.input.action.IAction;
+import de.bwravencl.controllerbuddy.input.action.NullAction;
 import net.brockmatt.util.ResourceBundleUtil;
 import net.java.games.input.Component;
 
@@ -110,11 +113,17 @@ public class EditActionsDialog extends JDialog {
 				final IAction action = (IAction) selectedAvailableAction.clazz.getConstructor().newInstance();
 
 				if (action instanceof ButtonToModeAction) {
+					final ButtonToModeAction buttonToModeAction = (ButtonToModeAction) action;
+
 					if (unsavedProfile.getComponentToModeActionMap().get(component.getName()) == null)
 						unsavedProfile.getComponentToModeActionMap().put(component.getName(), new ArrayList<>());
 
 					unsavedProfile.getComponentToModeActionMap().get(component.getName())
 							.add((ButtonToModeAction) action);
+
+					if (buttonToModeAction.targetsOnScreenKeyboardMode()
+							&& !unsavedProfile.getModes().contains(OnScreenKeyboard.onScreenKeyboardMode))
+						unsavedProfile.getModes().add(OnScreenKeyboard.onScreenKeyboardMode);
 				} else if (isComponentEditor()) {
 					final Map<String, List<IAction>> componentToActionMap = selectedMode.getComponentToActionsMap();
 					final String componentName = component.getName();
@@ -354,6 +363,21 @@ public class EditActionsDialog extends JDialog {
 				unsavedProfile.getComponentToModeActionMap().get(component.getName()).remove(selectedAssignedAction);
 				if (unsavedProfile.getComponentToModeActionMap().get(component.getName()).isEmpty())
 					unsavedProfile.getComponentToModeActionMap().remove(component.getName());
+
+				if (((ButtonToModeAction) selectedAssignedAction).targetsOnScreenKeyboardMode()) {
+					boolean removeOnScreenKeyboardMode = true;
+
+					outer: for (final List<ButtonToModeAction> buttonToModeActions : unsavedProfile
+							.getComponentToModeActionMap().values())
+						for (final ButtonToModeAction a : buttonToModeActions)
+							if (a.targetsOnScreenKeyboardMode()) {
+								removeOnScreenKeyboardMode = false;
+								break outer;
+							}
+
+					if (removeOnScreenKeyboardMode)
+						unsavedProfile.getModes().remove(OnScreenKeyboard.onScreenKeyboardMode);
+				}
 			} else if (isComponentEditor()) {
 				final Map<String, List<IAction>> componentToActionMap = selectedMode.getComponentToActionsMap();
 				final List<IAction> actions = componentToActionMap.get(component.getName());
@@ -376,13 +400,16 @@ public class EditActionsDialog extends JDialog {
 	private static final long serialVersionUID = 8876286334367723566L;
 	private static final Class<?>[] AXIS_ACTION_CLASSES = { AxisToAxisAction.class, AxisToButtonAction.class,
 			AxisToCursorAction.class, AxisToKeyAction.class, AxisToMouseButtonAction.class,
-			AxisToRelativeAxisAction.class, AxisToScrollAction.class };
+			AxisToRelativeAxisAction.class, AxisToScrollAction.class, NullAction.class };
 	private static final Class<?>[] BUTTON_ACTION_CLASSES = { ButtonToButtonAction.class, ButtonToCycleAction.class,
 			ButtonToKeyAction.class, ButtonToLockKeyAction.class, ButtonToModeAction.class,
-			ButtonToOnScreenKeyboardAction.class, ButtonToMouseButtonAction.class, ButtonToRelativeAxisReset.class,
-			ButtonToScrollAction.class };
+			ButtonToMouseButtonAction.class, ButtonToRelativeAxisReset.class, ButtonToScrollAction.class,
+			NullAction.class };
 	private static final Class<?>[] CYCLE_ACTION_CLASSES = { ButtonToButtonAction.class, ButtonToKeyAction.class,
-			ButtonToMouseButtonAction.class, ButtonToRelativeAxisReset.class, ButtonToScrollAction.class };
+			ButtonToMouseButtonAction.class, ButtonToRelativeAxisReset.class, ButtonToScrollAction.class,
+			NullAction.class };
+	private static final Class<?>[] ON_SCREEN_KEYBOARD_ACTION_CLASSES = { ButtonToPressOnScreenKeyboardKeyAction.class,
+			ButtonToSelectOnScreenKeyboardKeyAction.class };
 	private static final String ACTION_PROPERTY_GETTER_PREFIX_DEFAULT = "get";
 	private static final String ACTION_PROPERTY_GETTER_PREFIX_BOOLEAN = "is";
 	private static final String ACTION_PROPERTY_SETTER_PREFIX = "set";
@@ -497,7 +524,7 @@ public class EditActionsDialog extends JDialog {
 		if (assignedActions != null)
 			clonedAssignedActions.addAll(assignedActions);
 
-		if (isComponentEditor() && Profile.isDefaultMode(selectedMode)) {
+		if (isComponentEditor() && Profile.defaultMode.equals(selectedMode)) {
 			final List<ButtonToModeAction> buttonToModeActions = unsavedProfile.getComponentToModeActionMap()
 					.get(component.getName());
 			if (buttonToModeActions != null)
@@ -574,20 +601,17 @@ public class EditActionsDialog extends JDialog {
 				removeButton.setEnabled(true);
 
 			EventQueue.invokeLater(() -> {
-				if (selectedAssignedAction == null) {
-					propertiesLabel.setVisible(false);
-					propertiesScrollPane.setVisible(false);
-				} else {
-					propertiesLabel.setVisible(true);
-
-					final JPanel propertiesPanel = new JPanel(new GridBagLayout());
-
+				JPanel propertiesPanel = null;
+				if (selectedAssignedAction != null)
 					for (final Method m : selectedAssignedAction.getClass().getMethods()) {
 						final String methodDescription = m.toGenericString();
 						String methodName = methodDescription.substring(0, methodDescription.indexOf('('));
 						methodName = methodName.substring(methodName.lastIndexOf('.') + 1);
 
 						if (methodName.startsWith(ACTION_PROPERTY_SETTER_PREFIX)) {
+							if (propertiesPanel == null)
+								propertiesPanel = new JPanel(new GridBagLayout());
+
 							final String propertyName = methodName
 									.substring(methodName.indexOf(ACTION_PROPERTY_SETTER_PREFIX)
 											+ ACTION_PROPERTY_SETTER_PREFIX.length());
@@ -599,6 +623,11 @@ public class EditActionsDialog extends JDialog {
 							final Class<?> clazz;
 							try {
 								clazz = Class.forName(parameterType);
+
+								if (selectedAssignedAction instanceof ButtonToModeAction
+										&& ((ButtonToModeAction) selectedAssignedAction).targetsOnScreenKeyboardMode()
+										&& Mode.class == clazz)
+									continue;
 
 								final Method getterMethod = selectedAssignedAction.getClass()
 										.getMethod((clazz == Boolean.class ? ACTION_PROPERTY_GETTER_PREFIX_BOOLEAN
@@ -684,7 +713,7 @@ public class EditActionsDialog extends JDialog {
 								} else if (Mode.class == clazz) {
 									final JComboBox<Mode> comboBox = new JComboBox<>();
 									for (final Mode p : Input.getProfile().getModes())
-										if (!Profile.isDefaultMode(p))
+										if (!Profile.defaultMode.equals(p))
 											comboBox.addItem(p);
 									comboBox.setAction(new JComboBoxSetPropertyAction(m));
 									comboBox.setSelectedItem(getterMethod.invoke(selectedAssignedAction));
@@ -696,6 +725,11 @@ public class EditActionsDialog extends JDialog {
 									propertyPanel.add(comboBox);
 								} else if (MouseAxis.class == clazz) {
 									final JComboBox<MouseAxis> comboBox = new JComboBox<>(MouseAxis.values());
+									comboBox.setAction(new JComboBoxSetPropertyAction(m));
+									comboBox.setSelectedItem(getterMethod.invoke(selectedAssignedAction));
+									propertyPanel.add(comboBox);
+								} else if (Direction.class == clazz) {
+									final JComboBox<Direction> comboBox = new JComboBox<>(Direction.values());
 									comboBox.setAction(new JComboBoxSetPropertyAction(m));
 									comboBox.setSelectedItem(getterMethod.invoke(selectedAssignedAction));
 									propertyPanel.add(comboBox);
@@ -768,13 +802,17 @@ public class EditActionsDialog extends JDialog {
 						}
 					}
 
+				final boolean anyPropertiesFound = propertiesPanel != null;
+
+				if (anyPropertiesFound) {
 					propertiesPanel.add(Box.createGlue(),
 							new GridBagConstraints(0, GridBagConstraints.RELATIVE, 1, 1, 1.0, 1.0,
 									GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
 					propertiesScrollPane.setViewportView(propertiesPanel);
-					propertiesScrollPane.setVisible(true);
 				}
+				propertiesLabel.setVisible(anyPropertiesFound);
+				propertiesScrollPane.setVisible(anyPropertiesFound);
 			});
 		});
 		actionsPanel.add(new JScrollPane(assignedActionsList), new GridBagConstraints(2, 1, 1, 5, 0.25, 1.0,
@@ -817,6 +855,8 @@ public class EditActionsDialog extends JDialog {
 		if (isComponentEditor()) {
 			if (component.isAnalog())
 				actionClasses = AXIS_ACTION_CLASSES;
+			else if (OnScreenKeyboard.onScreenKeyboardMode.equals(selectedMode))
+				actionClasses = ON_SCREEN_KEYBOARD_ACTION_CLASSES;
 			else
 				actionClasses = BUTTON_ACTION_CLASSES;
 		} else
@@ -826,7 +866,8 @@ public class EditActionsDialog extends JDialog {
 			final AvailableAction availableAction = new AvailableAction(c);
 			if (ButtonToModeAction.class.equals(availableAction.clazz)) {
 				if (unsavedProfile.getModes().size() > 1)
-					if (Profile.isDefaultMode(selectedMode) || !ButtonToModeAction.class.equals(availableAction.clazz))
+					if (Profile.defaultMode.equals(selectedMode)
+							|| !ButtonToModeAction.class.equals(availableAction.clazz))
 						availableActions.add(availableAction);
 			} else
 				availableActions.add(availableAction);

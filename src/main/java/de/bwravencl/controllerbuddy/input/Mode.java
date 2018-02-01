@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
@@ -42,13 +43,13 @@ public class Mode implements Cloneable {
 		description = rb.getString("NEW_MODE_DESCRIPTION");
 	}
 
-	public Mode(final String uuid) {
-		this.uuid = UUID.fromString(uuid);
+	public Mode(final UUID uuid) {
+		this.uuid = uuid;
 	}
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		final Mode mode = new Mode(uuid.toString());
+		final Mode mode = new Mode(uuid);
 		mode.setDescription(new String(description));
 
 		final Map<String, List<IAction>> clonedComponentToActionMap = new HashMap<>();
@@ -69,6 +70,16 @@ public class Mode implements Cloneable {
 		return mode;
 	}
 
+	@Override
+	public boolean equals(final Object arg0) {
+		if (this == arg0)
+			return true;
+		else if (arg0 instanceof Mode)
+			return getUuid().equals(((Mode) arg0).getUuid());
+		else
+			return false;
+	}
+
 	public Map<String, List<IAction>> getComponentToActionsMap() {
 		return componentToActionsMap;
 	}
@@ -79,6 +90,11 @@ public class Mode implements Cloneable {
 
 	public UUID getUuid() {
 		return uuid;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(uuid);
 	}
 
 	public void setComponentToActionMap(final Map<String, List<IAction>> componentToActionsMap) {

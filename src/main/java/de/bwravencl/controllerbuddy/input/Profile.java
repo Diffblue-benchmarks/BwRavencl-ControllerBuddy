@@ -37,10 +37,15 @@ import net.brockmatt.util.ResourceBundleUtil;
 
 public class Profile implements Cloneable {
 
-	public static final String DEFAULT_MODE_UUID_STRING = "067e6162-3b6f-4ae2-a171-2470b63dff00";
+	private static final UUID DEFAULT_MODE_UUID = UUID.fromString("067e6162-3b6f-4ae2-a171-2470b63dff00");
 
-	public static boolean isDefaultMode(final Mode mode) {
-		return mode.getUuid().equals(UUID.fromString(DEFAULT_MODE_UUID_STRING));
+	public static final Mode defaultMode;
+
+	static {
+		defaultMode = new Mode(DEFAULT_MODE_UUID);
+		final ResourceBundle rb = new ResourceBundleUtil().getResourceBundle(Main.STRING_RESOURCE_BUNDLE_BASENAME,
+				Locale.getDefault());
+		defaultMode.setDescription(rb.getString("DEFAULT_MODE_DESCRIPTION"));
 	}
 
 	private Map<String, List<ButtonToModeAction>> componentToModeActionMap = new HashMap<>();
@@ -49,10 +54,6 @@ public class Profile implements Cloneable {
 	private Map<VirtualAxis, Color> virtualAxisToColorMap = new HashMap<>();
 
 	public Profile() {
-		final Mode defaultMode = new Mode(DEFAULT_MODE_UUID_STRING);
-		final ResourceBundle rb = new ResourceBundleUtil().getResourceBundle(Main.STRING_RESOURCE_BUNDLE_BASENAME,
-				Locale.getDefault());
-		defaultMode.setDescription(rb.getString("DEFAULT_MODE_DESCRIPTION"));
 		modes.add(defaultMode);
 	}
 

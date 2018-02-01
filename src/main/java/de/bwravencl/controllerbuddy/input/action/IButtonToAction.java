@@ -69,7 +69,7 @@ public interface IButtonToAction extends IAction {
 							break;
 						}
 
-					if (!Profile.isDefaultMode(Input.getProfile().getActiveMode()))
+					if (!Profile.defaultMode.equals(Input.getProfile().getActiveMode()))
 						for (final List<IAction> actions : Input.getProfile().getModes().get(0)
 								.getComponentToActionsMap().values())
 							if (actions.contains(this)) {

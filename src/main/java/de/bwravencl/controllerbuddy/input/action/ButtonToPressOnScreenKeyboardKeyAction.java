@@ -27,7 +27,7 @@ public class ButtonToPressOnScreenKeyboardKeyAction implements IButtonToAction {
 			if (lockKey)
 				wasUp = true;
 			else if (wasDown) {
-				input.getMain().getOnScreenKeyboard().release();
+				input.getMain().getOnScreenKeyboard().releaseAll();
 				wasDown = false;
 			} else
 				wasDown = false;
@@ -37,7 +37,7 @@ public class ButtonToPressOnScreenKeyboardKeyAction implements IButtonToAction {
 				wasUp = false;
 			}
 		} else {
-			input.getMain().getOnScreenKeyboard().press();
+			input.getMain().getOnScreenKeyboard().pressSelected();
 			wasDown = true;
 		}
 	}

@@ -18,8 +18,9 @@
 package de.bwravencl.controllerbuddy.gui;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GraphicsEnvironment;
-import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.geom.RoundRectangle2D;
@@ -32,6 +33,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -58,6 +60,11 @@ public class OnScreenKeyboard extends JFrame {
 			super(text);
 		}
 
+		@Override
+		public Dimension getPreferredSize() {
+			return new Dimension(55, 55);
+		}
+
 		protected abstract void poll(final Input input);
 
 		protected abstract void press();
@@ -76,10 +83,14 @@ public class OnScreenKeyboard extends JFrame {
 
 		private boolean changed = false;
 
+		private final String scanCodeName;
+
 		private final KeyStroke keyStroke;
 
 		public DefaultKeyboardButton(final String scanCodeName) {
 			super(scanCodeName);
+
+			this.scanCodeName = scanCodeName;
 
 			final Integer[] keyCodes;
 			final Integer[] modifierCodes;
@@ -128,6 +139,24 @@ public class OnScreenKeyboard extends JFrame {
 					}
 				}
 			});
+		}
+
+		@Override
+		public Dimension getPreferredSize() {
+			final Dimension preferredSize = super.getPreferredSize();
+
+			if (ScanCode.TAB.equals(scanCodeName))
+				preferredSize.width *= 1.5;
+			else if (ScanCode.RIGHT_SHIFT.equals(scanCodeName) || ScanCode.BACK_SLASH.equals(scanCodeName)
+					|| ScanCode.NUM_PAD0.equals(scanCodeName))
+				preferredSize.width *= 2;
+			else if (ScanCode.LEFT_SHIFT.equals(scanCodeName) || ScanCode.RETURN.equals(scanCodeName)
+					|| ScanCode.BACK_SPACE.equals(scanCodeName))
+				preferredSize.width *= 2.5;
+			else if (ScanCode.SPACE.equals(scanCodeName))
+				preferredSize.width *= 5.5;
+
+			return preferredSize;
 		}
 
 		@Override
@@ -189,6 +218,16 @@ public class OnScreenKeyboard extends JFrame {
 		public LockKeyButton(final int virtualKeyCode) {
 			super(LockKey.virtualKeyCodeToLockKeyMap.get(virtualKeyCode).name);
 			this.virtualKeyCode = virtualKeyCode;
+		}
+
+		@Override
+		public Dimension getPreferredSize() {
+			final Dimension preferredSize = super.getPreferredSize();
+
+			if (virtualKeyCode == KeyEvent.VK_CAPS_LOCK)
+				preferredSize.width *= 2;
+
+			return preferredSize;
 		}
 
 		@Override
@@ -257,14 +296,50 @@ public class OnScreenKeyboard extends JFrame {
 					new DefaultKeyboardButton(ScanCode.F6), new DefaultKeyboardButton(ScanCode.F7),
 					new DefaultKeyboardButton(ScanCode.F8), new DefaultKeyboardButton(ScanCode.F9),
 					new DefaultKeyboardButton(ScanCode.F10), new DefaultKeyboardButton(ScanCode.F11),
-					new DefaultKeyboardButton(ScanCode.F12) },
-			{ new DefaultKeyboardButton(ScanCode.APOSTROPHE), new DefaultKeyboardButton(ScanCode.D1),
+					new DefaultKeyboardButton(ScanCode.F12), new DefaultKeyboardButton(ScanCode.SYS_RQ),
+					new LockKeyButton(KeyEvent.VK_SCROLL_LOCK), new DefaultKeyboardButton(ScanCode.PAUSE) },
+			{ new DefaultKeyboardButton(ScanCode.GRAVE), new DefaultKeyboardButton(ScanCode.D1),
 					new DefaultKeyboardButton(ScanCode.D2), new DefaultKeyboardButton(ScanCode.D3),
 					new DefaultKeyboardButton(ScanCode.D4), new DefaultKeyboardButton(ScanCode.D5),
 					new DefaultKeyboardButton(ScanCode.D6), new DefaultKeyboardButton(ScanCode.D7),
 					new DefaultKeyboardButton(ScanCode.D8), new DefaultKeyboardButton(ScanCode.D9),
 					new DefaultKeyboardButton(ScanCode.D0), new DefaultKeyboardButton(ScanCode.SUBTRACT),
-					new DefaultKeyboardButton(ScanCode.ADD), new LockKeyButton(KeyEvent.VK_NUM_LOCK) } };
+					new DefaultKeyboardButton(ScanCode.EQUALS), new DefaultKeyboardButton(ScanCode.BACK_SPACE),
+					new LockKeyButton(KeyEvent.VK_NUM_LOCK), new DefaultKeyboardButton(ScanCode.DIVIDE),
+					new DefaultKeyboardButton(ScanCode.MULTIPLY), new DefaultKeyboardButton(ScanCode.NUM_PAD_MINUS) },
+			{ new DefaultKeyboardButton(ScanCode.TAB), new DefaultKeyboardButton(ScanCode.Q),
+					new DefaultKeyboardButton(ScanCode.W), new DefaultKeyboardButton(ScanCode.E),
+					new DefaultKeyboardButton(ScanCode.R), new DefaultKeyboardButton(ScanCode.T),
+					new DefaultKeyboardButton(ScanCode.Y), new DefaultKeyboardButton(ScanCode.U),
+					new DefaultKeyboardButton(ScanCode.I), new DefaultKeyboardButton(ScanCode.O),
+					new DefaultKeyboardButton(ScanCode.P), new DefaultKeyboardButton(ScanCode.LEFT_BRACKET),
+					new DefaultKeyboardButton(ScanCode.RIGHT_BRACKET), new DefaultKeyboardButton(ScanCode.BACK_SLASH),
+					new DefaultKeyboardButton(ScanCode.NUM_PAD7), new DefaultKeyboardButton(ScanCode.NUM_PAD8),
+					new DefaultKeyboardButton(ScanCode.NUM_PAD9), new DefaultKeyboardButton(ScanCode.NUM_PAD_PLUS) },
+			{ new LockKeyButton(KeyEvent.VK_CAPS_LOCK), new DefaultKeyboardButton(ScanCode.A),
+					new DefaultKeyboardButton(ScanCode.S), new DefaultKeyboardButton(ScanCode.D),
+					new DefaultKeyboardButton(ScanCode.F), new DefaultKeyboardButton(ScanCode.G),
+					new DefaultKeyboardButton(ScanCode.H), new DefaultKeyboardButton(ScanCode.J),
+					new DefaultKeyboardButton(ScanCode.K), new DefaultKeyboardButton(ScanCode.L),
+					new DefaultKeyboardButton(ScanCode.SEMI_COLON), new DefaultKeyboardButton(ScanCode.APOSTROPHE),
+					new DefaultKeyboardButton(ScanCode.RETURN), new DefaultKeyboardButton(ScanCode.NUM_PAD4),
+					new DefaultKeyboardButton(ScanCode.NUM_PAD5), new DefaultKeyboardButton(ScanCode.NUM_PAD6) },
+			{ new DefaultKeyboardButton(ScanCode.LEFT_SHIFT), new DefaultKeyboardButton(ScanCode.Z),
+					new DefaultKeyboardButton(ScanCode.X), new DefaultKeyboardButton(ScanCode.C),
+					new DefaultKeyboardButton(ScanCode.V), new DefaultKeyboardButton(ScanCode.B),
+					new DefaultKeyboardButton(ScanCode.N), new DefaultKeyboardButton(ScanCode.M),
+					new DefaultKeyboardButton(ScanCode.COMMA), new DefaultKeyboardButton(ScanCode.PERIOD),
+					new DefaultKeyboardButton(ScanCode.SLASH), new DefaultKeyboardButton(ScanCode.RIGHT_SHIFT),
+					new DefaultKeyboardButton(ScanCode.NUM_PAD1), new DefaultKeyboardButton(ScanCode.NUM_PAD2),
+					new DefaultKeyboardButton(ScanCode.NUM_PAD3) },
+			{ new DefaultKeyboardButton(ScanCode.LEFT_CONTROL), new DefaultKeyboardButton(ScanCode.LEFT_WINDOWS),
+					new DefaultKeyboardButton(ScanCode.LEFT_ALT), new DefaultKeyboardButton(ScanCode.SPACE),
+					new DefaultKeyboardButton(ScanCode.RIGHT_ALT), new DefaultKeyboardButton(ScanCode.RIGHT_WINDOWS),
+					new DefaultKeyboardButton(ScanCode.RIGHT_CONTROL), new DefaultKeyboardButton(ScanCode.UP_ARROW),
+					new DefaultKeyboardButton(ScanCode.DOWN_ARROW), new DefaultKeyboardButton(ScanCode.LEFT_ARROW),
+					new DefaultKeyboardButton(ScanCode.RIGHT_ARROW), new DefaultKeyboardButton(ScanCode.NUM_PAD0),
+					new DefaultKeyboardButton(ScanCode.NUM_PAD_COMMA),
+					new DefaultKeyboardButton(ScanCode.NUM_PAD_ENTER) } };
 
 	private boolean anyChanges = false;
 
@@ -278,11 +353,15 @@ public class OnScreenKeyboard extends JFrame {
 		setBackground(Main.TRANSPARENT);
 		setAlwaysOnTop(true);
 
-		final JPanel parentPanel = new JPanel(new GridLayout(0, 1));
+		final JPanel parentPanel = new JPanel();
+		parentPanel.setLayout(new BoxLayout(parentPanel, BoxLayout.Y_AXIS));
 		parentPanel.setBackground(Main.TRANSPARENT);
 
 		for (int row = 0; row < keyboardButtons.length; row++) {
-			final JPanel rowPanel = new JPanel();
+			final FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT);
+			flowLayout.setHgap(0);
+			flowLayout.setVgap(0);
+			final JPanel rowPanel = new JPanel(flowLayout);
 			rowPanel.setBackground(ROW_BACKGROUND);
 			rowPanel.setBorder(
 					BorderFactory.createEmptyBorder(row == 0 ? 5 : 0, 5, row == keyboardButtons.length - 1 ? 5 : 0, 5));
@@ -378,6 +457,7 @@ public class OnScreenKeyboard extends JFrame {
 
 	protected void updateLocation() {
 		pack();
+
 		final Rectangle rectangle = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
 		final int x = (int) rectangle.getMaxX() / 2 - getWidth() / 2;
 		final int y = (int) rectangle.getMaxY() - getHeight();

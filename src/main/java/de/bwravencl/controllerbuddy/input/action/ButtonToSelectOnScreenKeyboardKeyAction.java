@@ -9,9 +9,11 @@ public class ButtonToSelectOnScreenKeyboardKeyAction implements IButtonToAction 
 		UP, DOWN, LEFT, RIGHT
 	}
 
+	private static final long MIN_ELAPSE_TIME = 150L;
+
 	private boolean longPress = DEFAULT_LONG_PRESS;
 
-	private transient boolean wasUp = true;
+	private transient long lastPressTime;
 
 	private float activationValue = DEFAULT_ACTIVATION_VALUE;
 
@@ -27,8 +29,10 @@ public class ButtonToSelectOnScreenKeyboardKeyAction implements IButtonToAction 
 		value = handleLongPress(value);
 
 		if (value == activationValue) {
-			if (wasUp) {
+			final long currentTime = System.currentTimeMillis();
+			if (currentTime - lastPressTime >= MIN_ELAPSE_TIME) {
 				final OnScreenKeyboard onScreenKeyboard = input.getMain().getOnScreenKeyboard();
+
 				switch (direction) {
 				case UP:
 					onScreenKeyboard.moveSelectorUp();
@@ -45,10 +49,10 @@ public class ButtonToSelectOnScreenKeyboardKeyAction implements IButtonToAction 
 				default:
 					break;
 				}
-				wasUp = false;
+
+				lastPressTime = currentTime;
 			}
-		} else
-			wasUp = true;
+		}
 	}
 
 	@Override

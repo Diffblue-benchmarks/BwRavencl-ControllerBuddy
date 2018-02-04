@@ -27,7 +27,6 @@ import java.awt.geom.RoundRectangle2D;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,13 +78,19 @@ public class OnScreenKeyboard extends JFrame {
 
 		private static final long serialVersionUID = -1739002089027358633L;
 
-		private static final long MIN_LONG_CLICK_TIME = 500L;
+		private static final long MIN_REPEAT_PRESS_TIME = 150L;
 
-		private boolean changed = false;
+		private boolean changed;
+
+		private boolean doDownUp;
+
+		private long beginPress;
 
 		private final String scanCodeName;
 
 		private final KeyStroke keyStroke;
+
+		private TimerTask lockTimerTask;
 
 		public DefaultKeyboardButton(final String scanCodeName) {
 			super(scanCodeName);
@@ -111,7 +116,6 @@ public class OnScreenKeyboard extends JFrame {
 			addChangeListener(new ChangeListener() {
 
 				private boolean lastPressed;
-				private long beginPress;
 
 				@Override
 				public void stateChanged(final ChangeEvent e) {
@@ -120,20 +124,31 @@ public class OnScreenKeyboard extends JFrame {
 						if (pressed) {
 							beginPress = System.currentTimeMillis();
 							press();
-							new Timer().schedule(new TimerTask() {
+
+							if (lockTimerTask != null)
+								lockTimerTask.cancel();
+							lockTimerTask = new TimerTask() {
 
 								@Override
 								public void run() {
-									if (heldButtons.contains(DefaultKeyboardButton.this))
+									if (heldButtons.contains(DefaultKeyboardButton.this)) {
 										DefaultKeyboardButton.this.setForeground(Color.GRAY);
+										press();
+									}
 								}
 
-							}, MIN_LONG_CLICK_TIME);
-						} else if (System.currentTimeMillis() - beginPress < MIN_LONG_CLICK_TIME) {
-							releaseAll();
-							beginPress = 0L;
-						} else
-							DefaultKeyboardButton.this.setForeground(KEYBOARD_BUTTON_DEFAULT_FOREGROUND);
+							};
+							Main.getTimer().schedule(lockTimerTask, MIN_REPEAT_PRESS_TIME);
+						} else {
+							if (System.currentTimeMillis() - beginPress < MIN_REPEAT_PRESS_TIME) {
+								release();
+								releaseAllAfterPoll = true;
+
+							} else
+								DefaultKeyboardButton.this.setForeground(KEYBOARD_BUTTON_DEFAULT_FOREGROUND);
+
+							lockTimerTask.cancel();
+						}
 
 						lastPressed = pressed;
 					}
@@ -161,46 +176,57 @@ public class OnScreenKeyboard extends JFrame {
 
 		@Override
 		protected void poll(final Input input) {
-			if (changed) {
-				final Set<KeyStroke> downKeyStrokes = input.getDownKeyStrokes();
+			if (!changed)
+				return;
 
-				if (heldButtons.contains(this))
-					downKeyStrokes.add(keyStroke);
-				else
-					downKeyStrokes.remove(keyStroke);
+			if (doDownUp) {
+				input.getDownUpKeyStrokes().add(keyStroke);
+				doDownUp = false;
 			}
+
+			final Set<KeyStroke> downKeyStrokes = input.getDownKeyStrokes();
+
+			if (heldButtons.contains(this)) {
+				if (System.currentTimeMillis() - beginPress >= MIN_REPEAT_PRESS_TIME)
+					downKeyStrokes.add(keyStroke);
+			} else
+				downKeyStrokes.remove(keyStroke);
+
+			changed = false;
 		}
 
 		@Override
 		protected void press() {
 			setBackground(KEYBOARD_BUTTON_HELD_BACKGROUND);
-			if (heldButtons.add(this)) {
-				changed = true;
-				anyChanges = true;
-			}
+
+			if (heldButtons.add(this))
+				beginPress = System.currentTimeMillis();
+
+			changed = true;
+			anyChanges = true;
 		}
 
 		@Override
 		protected void release() {
 			setBackground(KEYBOARD_BUTTON_DEFAULT_BACKGROUND);
 			if (heldButtons.remove(this)) {
+				if (System.currentTimeMillis() - beginPress < MIN_REPEAT_PRESS_TIME)
+					doDownUp = true;
+
+				beginPress = 0L;
 				changed = true;
 				anyChanges = true;
 			}
-		}
-
-		protected void releaseAll() {
-			for (final AbstractKeyboardButton[] row : keyboardButtons)
-				for (final AbstractKeyboardButton kb : row)
-					kb.release();
 		}
 
 		@Override
 		protected void toggleLock() {
 			if (heldButtons.contains(this))
 				release();
-			else
+			else {
 				press();
+				beginPress = 0L;
+			}
 		}
 
 	}
@@ -209,15 +235,21 @@ public class OnScreenKeyboard extends JFrame {
 
 		private static final long serialVersionUID = 4014130700331413635L;
 
-		private boolean changed = false;
+		private boolean changed;
 
-		private boolean locked = false;
+		private boolean locked;
 
 		private final int virtualKeyCode;
+
+		private boolean wasUp = true;
 
 		public LockKeyButton(final int virtualKeyCode) {
 			super(LockKey.virtualKeyCodeToLockKeyMap.get(virtualKeyCode).name);
 			this.virtualKeyCode = virtualKeyCode;
+
+			addActionListener(arg0 -> {
+				toggleLock();
+			});
 		}
 
 		@Override
@@ -235,20 +267,25 @@ public class OnScreenKeyboard extends JFrame {
 			if (!changed)
 				return;
 
-			changed = false;
-
 			if (locked)
 				input.getOnLockKeys().add(virtualKeyCode);
 			else
 				input.getOffLockKeys().add(virtualKeyCode);
+
+			changed = false;
 		}
 
 		@Override
 		protected void press() {
+			if (wasUp) {
+				toggleLock();
+				wasUp = false;
+			}
 		}
 
 		@Override
 		protected void release() {
+			wasUp = true;
 		}
 
 		@Override
@@ -303,7 +340,7 @@ public class OnScreenKeyboard extends JFrame {
 					new DefaultKeyboardButton(ScanCode.D4), new DefaultKeyboardButton(ScanCode.D5),
 					new DefaultKeyboardButton(ScanCode.D6), new DefaultKeyboardButton(ScanCode.D7),
 					new DefaultKeyboardButton(ScanCode.D8), new DefaultKeyboardButton(ScanCode.D9),
-					new DefaultKeyboardButton(ScanCode.D0), new DefaultKeyboardButton(ScanCode.SUBTRACT),
+					new DefaultKeyboardButton(ScanCode.D0), new DefaultKeyboardButton(ScanCode.MINUS),
 					new DefaultKeyboardButton(ScanCode.EQUALS), new DefaultKeyboardButton(ScanCode.BACK_SPACE),
 					new LockKeyButton(KeyEvent.VK_NUM_LOCK), new DefaultKeyboardButton(ScanCode.DIVIDE),
 					new DefaultKeyboardButton(ScanCode.MULTIPLY), new DefaultKeyboardButton(ScanCode.NUM_PAD_MINUS) },
@@ -341,10 +378,11 @@ public class OnScreenKeyboard extends JFrame {
 					new DefaultKeyboardButton(ScanCode.NUM_PAD_COMMA),
 					new DefaultKeyboardButton(ScanCode.NUM_PAD_ENTER) } };
 
-	private boolean anyChanges = false;
+	private boolean anyChanges;
+	private boolean releaseAllAfterPoll;
 
-	private int selectedRow = 0;
-	private int selectedColumn = 0;
+	private int selectedRow;
+	private int selectedColumn;
 
 	public OnScreenKeyboard() {
 		setType(JFrame.Type.UTILITY);
@@ -417,11 +455,16 @@ public class OnScreenKeyboard extends JFrame {
 
 	public void poll(final Input input) {
 		if (anyChanges) {
+			anyChanges = false;
+
 			for (final AbstractKeyboardButton[] row : keyboardButtons)
 				for (final AbstractKeyboardButton kb : row)
 					kb.poll(input);
+		}
 
-			anyChanges = false;
+		if (releaseAllAfterPoll) {
+			releaseAll();
+			releaseAllAfterPoll = false;
 		}
 	}
 
@@ -429,10 +472,15 @@ public class OnScreenKeyboard extends JFrame {
 		keyboardButtons[selectedRow][selectedColumn].press();
 	}
 
-	public void releaseAll() {
+	private void releaseAll() {
 		for (final AbstractKeyboardButton[] row : keyboardButtons)
 			for (final AbstractKeyboardButton kb : row)
 				kb.release();
+	}
+
+	public void releaseSelected() {
+		keyboardButtons[selectedRow][selectedColumn].release();
+		releaseAllAfterPoll = true;
 	}
 
 	@Override

@@ -650,6 +650,11 @@ public final class Main {
 	private static JPanel indicatorPanel;
 	private final static JLabel labelCurrentMode = new JLabel();
 	private static Dimension prevScreenSize;
+	private static final Timer timer = new Timer();
+
+	public static Timer getTimer() {
+		return timer;
+	}
 
 	public static boolean is64Bit() {
 		return "64".equals(System.getProperty("sun.arch.data.model"));
@@ -1545,7 +1550,7 @@ public final class Main {
 			}
 		}
 
-		new Timer().schedule(new StatusBarTextTimerTask(text), 5000L);
+		timer.schedule(new StatusBarTextTimerTask(text), 5000L);
 	}
 
 	public void setSelectedController(final Controller controller) {
@@ -1638,7 +1643,7 @@ public final class Main {
 			}
 		};
 
-		new Timer().schedule(overlayTimerTask, OVERLAY_POSITION_UPDATE_INTERVAL, OVERLAY_POSITION_UPDATE_INTERVAL);
+		timer.schedule(overlayTimerTask, OVERLAY_POSITION_UPDATE_INTERVAL, OVERLAY_POSITION_UPDATE_INTERVAL);
 	}
 
 	public void startServer() {

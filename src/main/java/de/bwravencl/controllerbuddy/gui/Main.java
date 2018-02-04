@@ -111,7 +111,7 @@ import org.apache.commons.cli.ParseException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.JsonParseException;
 import com.sun.jna.platform.win32.WinDef.UINT;
 
 import de.bwravencl.controllerbuddy.Version;
@@ -119,6 +119,7 @@ import de.bwravencl.controllerbuddy.input.Input;
 import de.bwravencl.controllerbuddy.input.Input.VirtualAxis;
 import de.bwravencl.controllerbuddy.input.Mode;
 import de.bwravencl.controllerbuddy.input.Profile;
+import de.bwravencl.controllerbuddy.input.action.ButtonToModeAction;
 import de.bwravencl.controllerbuddy.input.action.IAction;
 import de.bwravencl.controllerbuddy.json.InterfaceAdapter;
 import de.bwravencl.controllerbuddy.output.ClientVJoyOutputThread;
@@ -769,6 +770,7 @@ public final class Main {
 	private String loadedProfile = null;
 	private File currentFile;
 	private ServerSocket serverSocket;
+	private volatile boolean scheduleOnScreenKeyboardModeSwitch;
 	private final JFileChooser fileChooser = new JFileChooser() {
 
 		private static final long serialVersionUID = -4669170626378955605L;
@@ -1344,6 +1346,20 @@ public final class Main {
 		return preferences;
 	}
 
+	public void handleOnScreenKeyboardModeChange() {
+		if (scheduleOnScreenKeyboardModeSwitch) {
+			for (final List<ButtonToModeAction> buttonToModeActions : Input.getProfile().getComponentToModeActionMap()
+					.values())
+				for (final ButtonToModeAction buttonToModeAction : buttonToModeActions)
+					if (OnScreenKeyboard.onScreenKeyboardMode.equals(buttonToModeAction.getMode())) {
+						buttonToModeAction.doAction(input, buttonToModeAction.getActivationValue());
+						break;
+					}
+
+			scheduleOnScreenKeyboardModeSwitch = false;
+		}
+	}
+
 	private void initOverlay() {
 		String longestDescription = "";
 		for (final Mode m : Input.getProfile().getModes()) {
@@ -1370,7 +1386,9 @@ public final class Main {
 			if (isWindows()) {
 				final Icon icon = new ImageIcon(Main.class.getResource(KEYBOARD_ICON_RESOURCE_PATH));
 				final JButton onScreenKeyboardButton = new JButton(icon);
-				onScreenKeyboardButton.addActionListener(e -> toggleOnScreenKeyboard());
+				onScreenKeyboardButton.addActionListener(e -> {
+					scheduleOnScreenKeyboardModeSwitch = true;
+				});
 				onScreenKeyboardButton.setBorder(null);
 				onScreenKeyboardButton.setFocusPainted(false);
 				onScreenKeyboardButton.setContentAreaFilled(false);
@@ -1434,7 +1452,7 @@ public final class Main {
 
 					restartLast();
 				}
-			} catch (final JsonSyntaxException e) {
+			} catch (final JsonParseException e) {
 				e.printStackTrace();
 			}
 
@@ -1680,6 +1698,8 @@ public final class Main {
 			} catch (final InterruptedException e) {
 				e.printStackTrace();
 			}
+
+		System.gc();
 	}
 
 	public void stopClient(final boolean resetLastOutputType) {

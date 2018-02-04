@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class ScanCode {
+public class DirectInputKeyCode {
 
 	public static final String SLEEP = "Sleep";
 	public static final String NEXT = "Next";
@@ -184,51 +184,73 @@ public class ScanCode {
 	public static final String DELETE = "Delete";
 	public static final String Q = "Q";
 
-	private static final ScanCode[] SCAN_CODES = { new ScanCode(SLEEP, 223), new ScanCode(NEXT, 209),
-			new ScanCode(STOP, 149), new ScanCode(CONVERT, 121), new ScanCode(DECIMAL, 83), new ScanCode(X, 45),
-			new ScanCode(Y, 21), new ScanCode(ESCAPE, 1), new ScanCode(CIRCUMFLEX, 144), new ScanCode(PAGE_DOWN, 209),
-			new ScanCode(DOWN_ARROW, 208), new ScanCode(RIGHT_ARROW, 205), new ScanCode(LEFT_ARROW, 203),
-			new ScanCode(PAGE_UP, 201), new ScanCode(UP_ARROW, 200), new ScanCode(RIGHT_ALT, 184),
-			new ScanCode(NUM_PAD_SLASH, 181), new ScanCode(NUM_PAD_PERIOD, 83), new ScanCode(NUM_PAD_PLUS, 78),
-			new ScanCode(NUM_PAD_MINUS, 74), new ScanCode(CAPS_LOCK, 58), new ScanCode(LEFT_ALT, 56),
-			new ScanCode(NUM_PAD_STAR, 55), new ScanCode(BACK_SPACE, 14), new ScanCode(MEDIA_SELECT, 237),
-			new ScanCode(MAIL, 236), new ScanCode(MY_COMPUTER, 235), new ScanCode(WEB_BACK, 234),
-			new ScanCode(WEB_FORWARD, 233), new ScanCode(WEB_STOP, 232), new ScanCode(WEB_REFRESH, 231),
-			new ScanCode(WEB_FAVORITES, 230), new ScanCode(WEB_SEARCH, 229), new ScanCode(WAKE, 227),
-			new ScanCode(POWER, 222), new ScanCode(APPS, 221), new ScanCode(RIGHT_WINDOWS, 220),
-			new ScanCode(LEFT_WINDOWS, 219), new ScanCode(DOWN, 208), new ScanCode(END, 207), new ScanCode(PRIOR, 201),
-			new ScanCode(UP, 200), new ScanCode(HOME, 199), new ScanCode(RIGHT_MENU, 184), new ScanCode(SYS_RQ, 183),
-			new ScanCode(DIVIDE, 181), new ScanCode(NUM_PAD_COMMA, 179), new ScanCode(WEB_HOME, 178),
-			new ScanCode(VOLUME_UP, 176), new ScanCode(VOLUME_DOWN, 174), new ScanCode(MEDIA_STOP, 164),
-			new ScanCode(PLAY_PAUSE, 162), new ScanCode(CALCULATOR, 161), new ScanCode(MUTE, 160),
-			new ScanCode(RIGHT_CONTROL, 157), new ScanCode(NUM_PAD_ENTER, 156), new ScanCode(NEXT_TRACK, 153),
-			new ScanCode(UNLABELED, 151), new ScanCode(A_X, 150), new ScanCode(KANJI, 148),
-			new ScanCode(UNDERLINE, 147), new ScanCode(COLON, 146), new ScanCode(AT, 145),
-			new ScanCode(PREV_TRACK, 144), new ScanCode(NUM_PAD_EQUALS, 141), new ScanCode(ABNT_C2, 126),
-			new ScanCode(YEN, 125), new ScanCode(NO_CONVERT, 123), new ScanCode(ABNT_C1, 115), new ScanCode(KANA, 112),
-			new ScanCode(F15, 102), new ScanCode(F14, 101), new ScanCode(F13, 100), new ScanCode(F12, 88),
-			new ScanCode(F11, 87), new ScanCode(OEM102, 86), new ScanCode(NUM_PAD0, 82), new ScanCode(NUM_PAD3, 81),
-			new ScanCode(NUM_PAD2, 80), new ScanCode(NUM_PAD1, 79), new ScanCode(NUM_PAD6, 77),
-			new ScanCode(NUM_PAD5, 76), new ScanCode(NUM_PAD4, 75), new ScanCode(SUBTRACT, 74),
-			new ScanCode(NUM_PAD9, 73), new ScanCode(NUM_PAD8, 72), new ScanCode(NUM_PAD7, 71),
-			new ScanCode(SCROLL, 70), new ScanCode(NUMLOCK, 69), new ScanCode(F10, 68), new ScanCode(F9, 67),
-			new ScanCode(F8, 66), new ScanCode(F7, 65), new ScanCode(F6, 64), new ScanCode(F5, 63),
-			new ScanCode(F4, 62), new ScanCode(F3, 61), new ScanCode(F2, 60), new ScanCode(F1, 59),
-			new ScanCode(CAPITAL, 58), new ScanCode(SPACE, 57), new ScanCode(LEFT_MENU, 56), new ScanCode(MULTIPLY, 55),
-			new ScanCode(RIGHT_SHIFT, 54), new ScanCode(SLASH, 53), new ScanCode(PERIOD, 52), new ScanCode(COMMA, 51),
-			new ScanCode(M, 50), new ScanCode(N, 49), new ScanCode(B, 48), new ScanCode(V, 47), new ScanCode(C, 46),
-			new ScanCode(Z, 44), new ScanCode(BACK_SLASH, 43), new ScanCode(LEFT_SHIFT, 42), new ScanCode(GRAVE, 41),
-			new ScanCode(APOSTROPHE, 40), new ScanCode(SEMI_COLON, 39), new ScanCode(L, 38), new ScanCode(K, 37),
-			new ScanCode(J, 36), new ScanCode(H, 35), new ScanCode(G, 34), new ScanCode(F, 33), new ScanCode(D, 32),
-			new ScanCode(S, 31), new ScanCode(A, 30), new ScanCode(LEFT_CONTROL, 29), new ScanCode(RETURN, 28),
-			new ScanCode(RIGHT_BRACKET, 27), new ScanCode(LEFT_BRACKET, 26), new ScanCode(P, 25), new ScanCode(O, 24),
-			new ScanCode(I, 23), new ScanCode(U, 22), new ScanCode(T, 20), new ScanCode(R, 19), new ScanCode(E, 18),
-			new ScanCode(W, 17), new ScanCode(TAB, 15), new ScanCode(BACK, 14), new ScanCode(EQUALS, 13),
-			new ScanCode(MINUS, 12), new ScanCode(D0, 11), new ScanCode(D9, 10), new ScanCode(D8, 9),
-			new ScanCode(D7, 8), new ScanCode(D6, 7), new ScanCode(D5, 6), new ScanCode(D4, 5), new ScanCode(D3, 4),
-			new ScanCode(D2, 3), new ScanCode(D1, 2), new ScanCode(INSERT, 210), new ScanCode(RIGHT, 205),
-			new ScanCode(LEFT, 203), new ScanCode(PAUSE, 197), new ScanCode(ADD, 78), new ScanCode(DELETE, 211),
-			new ScanCode(Q, 16) };
+	private static final DirectInputKeyCode[] SCAN_CODES = { new DirectInputKeyCode(SLEEP, 223),
+			new DirectInputKeyCode(NEXT, 209), new DirectInputKeyCode(STOP, 149), new DirectInputKeyCode(CONVERT, 121),
+			new DirectInputKeyCode(DECIMAL, 83), new DirectInputKeyCode(X, 45), new DirectInputKeyCode(Y, 21),
+			new DirectInputKeyCode(ESCAPE, 1), new DirectInputKeyCode(CIRCUMFLEX, 144),
+			new DirectInputKeyCode(PAGE_DOWN, 209), new DirectInputKeyCode(DOWN_ARROW, 208),
+			new DirectInputKeyCode(RIGHT_ARROW, 205), new DirectInputKeyCode(LEFT_ARROW, 203),
+			new DirectInputKeyCode(PAGE_UP, 201), new DirectInputKeyCode(UP_ARROW, 200),
+			new DirectInputKeyCode(RIGHT_ALT, 184), new DirectInputKeyCode(NUM_PAD_SLASH, 181),
+			new DirectInputKeyCode(NUM_PAD_PERIOD, 83), new DirectInputKeyCode(NUM_PAD_PLUS, 78),
+			new DirectInputKeyCode(NUM_PAD_MINUS, 74), new DirectInputKeyCode(CAPS_LOCK, 58),
+			new DirectInputKeyCode(LEFT_ALT, 56), new DirectInputKeyCode(NUM_PAD_STAR, 55),
+			new DirectInputKeyCode(BACK_SPACE, 14), new DirectInputKeyCode(MEDIA_SELECT, 237),
+			new DirectInputKeyCode(MAIL, 236), new DirectInputKeyCode(MY_COMPUTER, 235),
+			new DirectInputKeyCode(WEB_BACK, 234), new DirectInputKeyCode(WEB_FORWARD, 233),
+			new DirectInputKeyCode(WEB_STOP, 232), new DirectInputKeyCode(WEB_REFRESH, 231),
+			new DirectInputKeyCode(WEB_FAVORITES, 230), new DirectInputKeyCode(WEB_SEARCH, 229),
+			new DirectInputKeyCode(WAKE, 227), new DirectInputKeyCode(POWER, 222), new DirectInputKeyCode(APPS, 221),
+			new DirectInputKeyCode(RIGHT_WINDOWS, 220), new DirectInputKeyCode(LEFT_WINDOWS, 219),
+			new DirectInputKeyCode(DOWN, 208), new DirectInputKeyCode(END, 207), new DirectInputKeyCode(PRIOR, 201),
+			new DirectInputKeyCode(UP, 200), new DirectInputKeyCode(HOME, 199), new DirectInputKeyCode(RIGHT_MENU, 184),
+			new DirectInputKeyCode(SYS_RQ, 183), new DirectInputKeyCode(DIVIDE, 181),
+			new DirectInputKeyCode(NUM_PAD_COMMA, 179), new DirectInputKeyCode(WEB_HOME, 178),
+			new DirectInputKeyCode(VOLUME_UP, 176), new DirectInputKeyCode(VOLUME_DOWN, 174),
+			new DirectInputKeyCode(MEDIA_STOP, 164), new DirectInputKeyCode(PLAY_PAUSE, 162),
+			new DirectInputKeyCode(CALCULATOR, 161), new DirectInputKeyCode(MUTE, 160),
+			new DirectInputKeyCode(RIGHT_CONTROL, 157), new DirectInputKeyCode(NUM_PAD_ENTER, 156),
+			new DirectInputKeyCode(NEXT_TRACK, 153), new DirectInputKeyCode(UNLABELED, 151),
+			new DirectInputKeyCode(A_X, 150), new DirectInputKeyCode(KANJI, 148),
+			new DirectInputKeyCode(UNDERLINE, 147), new DirectInputKeyCode(COLON, 146), new DirectInputKeyCode(AT, 145),
+			new DirectInputKeyCode(PREV_TRACK, 144), new DirectInputKeyCode(NUM_PAD_EQUALS, 141),
+			new DirectInputKeyCode(ABNT_C2, 126), new DirectInputKeyCode(YEN, 125),
+			new DirectInputKeyCode(NO_CONVERT, 123), new DirectInputKeyCode(ABNT_C1, 115),
+			new DirectInputKeyCode(KANA, 112), new DirectInputKeyCode(F15, 102), new DirectInputKeyCode(F14, 101),
+			new DirectInputKeyCode(F13, 100), new DirectInputKeyCode(F12, 88), new DirectInputKeyCode(F11, 87),
+			new DirectInputKeyCode(OEM102, 86), new DirectInputKeyCode(NUM_PAD0, 82),
+			new DirectInputKeyCode(NUM_PAD3, 81), new DirectInputKeyCode(NUM_PAD2, 80),
+			new DirectInputKeyCode(NUM_PAD1, 79), new DirectInputKeyCode(NUM_PAD6, 77),
+			new DirectInputKeyCode(NUM_PAD5, 76), new DirectInputKeyCode(NUM_PAD4, 75),
+			new DirectInputKeyCode(SUBTRACT, 74), new DirectInputKeyCode(NUM_PAD9, 73),
+			new DirectInputKeyCode(NUM_PAD8, 72), new DirectInputKeyCode(NUM_PAD7, 71),
+			new DirectInputKeyCode(SCROLL, 70), new DirectInputKeyCode(NUMLOCK, 69), new DirectInputKeyCode(F10, 68),
+			new DirectInputKeyCode(F9, 67), new DirectInputKeyCode(F8, 66), new DirectInputKeyCode(F7, 65),
+			new DirectInputKeyCode(F6, 64), new DirectInputKeyCode(F5, 63), new DirectInputKeyCode(F4, 62),
+			new DirectInputKeyCode(F3, 61), new DirectInputKeyCode(F2, 60), new DirectInputKeyCode(F1, 59),
+			new DirectInputKeyCode(CAPITAL, 58), new DirectInputKeyCode(SPACE, 57),
+			new DirectInputKeyCode(LEFT_MENU, 56), new DirectInputKeyCode(MULTIPLY, 55),
+			new DirectInputKeyCode(RIGHT_SHIFT, 54), new DirectInputKeyCode(SLASH, 53),
+			new DirectInputKeyCode(PERIOD, 52), new DirectInputKeyCode(COMMA, 51), new DirectInputKeyCode(M, 50),
+			new DirectInputKeyCode(N, 49), new DirectInputKeyCode(B, 48), new DirectInputKeyCode(V, 47),
+			new DirectInputKeyCode(C, 46), new DirectInputKeyCode(Z, 44), new DirectInputKeyCode(BACK_SLASH, 43),
+			new DirectInputKeyCode(LEFT_SHIFT, 42), new DirectInputKeyCode(GRAVE, 41),
+			new DirectInputKeyCode(APOSTROPHE, 40), new DirectInputKeyCode(SEMI_COLON, 39),
+			new DirectInputKeyCode(L, 38), new DirectInputKeyCode(K, 37), new DirectInputKeyCode(J, 36),
+			new DirectInputKeyCode(H, 35), new DirectInputKeyCode(G, 34), new DirectInputKeyCode(F, 33),
+			new DirectInputKeyCode(D, 32), new DirectInputKeyCode(S, 31), new DirectInputKeyCode(A, 30),
+			new DirectInputKeyCode(LEFT_CONTROL, 29), new DirectInputKeyCode(RETURN, 28),
+			new DirectInputKeyCode(RIGHT_BRACKET, 27), new DirectInputKeyCode(LEFT_BRACKET, 26),
+			new DirectInputKeyCode(P, 25), new DirectInputKeyCode(O, 24), new DirectInputKeyCode(I, 23),
+			new DirectInputKeyCode(U, 22), new DirectInputKeyCode(T, 20), new DirectInputKeyCode(R, 19),
+			new DirectInputKeyCode(E, 18), new DirectInputKeyCode(W, 17), new DirectInputKeyCode(TAB, 15),
+			new DirectInputKeyCode(BACK, 14), new DirectInputKeyCode(EQUALS, 13), new DirectInputKeyCode(MINUS, 12),
+			new DirectInputKeyCode(D0, 11), new DirectInputKeyCode(D9, 10), new DirectInputKeyCode(D8, 9),
+			new DirectInputKeyCode(D7, 8), new DirectInputKeyCode(D6, 7), new DirectInputKeyCode(D5, 6),
+			new DirectInputKeyCode(D4, 5), new DirectInputKeyCode(D3, 4), new DirectInputKeyCode(D2, 3),
+			new DirectInputKeyCode(D1, 2), new DirectInputKeyCode(INSERT, 210), new DirectInputKeyCode(RIGHT, 205),
+			new DirectInputKeyCode(LEFT, 203), new DirectInputKeyCode(PAUSE, 197), new DirectInputKeyCode(ADD, 78),
+			new DirectInputKeyCode(DELETE, 211), new DirectInputKeyCode(Q, 16) };
 
 	public static final Map<String, Integer> nameToScanCodeMap;
 	public static final Map<Integer, String> scanCodeToNameMap;
@@ -237,18 +259,18 @@ public class ScanCode {
 		nameToScanCodeMap = new TreeMap<>();
 		scanCodeToNameMap = new HashMap<>();
 
-		for (final ScanCode sc : SCAN_CODES) {
-			nameToScanCodeMap.put(sc.name, sc.scanCode);
-			scanCodeToNameMap.put(sc.scanCode, sc.name);
+		for (final DirectInputKeyCode sc : SCAN_CODES) {
+			nameToScanCodeMap.put(sc.name, sc.DirectInputKeyCode);
+			scanCodeToNameMap.put(sc.DirectInputKeyCode, sc.name);
 		}
 	}
 
 	public final String name;
-	public final int scanCode;
+	public final int DirectInputKeyCode;
 
-	public ScanCode(final String name, final int scanCode) {
+	public DirectInputKeyCode(final String name, final int DirectInputKeyCode) {
 		this.name = name;
-		this.scanCode = scanCode;
+		this.DirectInputKeyCode = DirectInputKeyCode;
 	}
 
 	@Override

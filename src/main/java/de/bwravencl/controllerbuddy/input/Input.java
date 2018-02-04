@@ -501,6 +501,7 @@ public class Input {
 		}
 
 		main.updateOverlayAxisIndicators();
+		main.handleOnScreenKeyboardModeChange();
 
 		return true;
 	}

@@ -42,11 +42,11 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import de.bwravencl.controllerbuddy.input.DirectInputKeyCode;
 import de.bwravencl.controllerbuddy.input.Input;
 import de.bwravencl.controllerbuddy.input.KeyStroke;
 import de.bwravencl.controllerbuddy.input.LockKey;
 import de.bwravencl.controllerbuddy.input.Mode;
-import de.bwravencl.controllerbuddy.input.ScanCode;
 import net.brockmatt.util.ResourceBundleUtil;
 
 public class OnScreenKeyboard extends JFrame {
@@ -80,11 +80,11 @@ public class OnScreenKeyboard extends JFrame {
 
 		private static final long MIN_REPEAT_PRESS_TIME = 150L;
 
-		private boolean changed;
+		private volatile boolean changed;
 
-		private boolean doDownUp;
+		private volatile boolean doDownUp;
 
-		private long beginPress;
+		private volatile long beginPress;
 
 		private final String scanCodeName;
 
@@ -100,14 +100,17 @@ public class OnScreenKeyboard extends JFrame {
 			final Integer[] keyCodes;
 			final Integer[] modifierCodes;
 
-			if (ScanCode.LEFT_ALT.equals(scanCodeName) || ScanCode.RIGHT_ALT.equals(scanCodeName)
-					|| ScanCode.LEFT_SHIFT.equals(scanCodeName) || ScanCode.RIGHT_SHIFT.equals(scanCodeName)
-					|| ScanCode.LEFT_CONTROL.equals(scanCodeName) || ScanCode.RIGHT_CONTROL.equals(scanCodeName)
-					|| ScanCode.LEFT_WINDOWS.equals(scanCodeName) || ScanCode.RIGHT_WINDOWS.equals(scanCodeName)) {
+			if (DirectInputKeyCode.LEFT_ALT.equals(scanCodeName) || DirectInputKeyCode.RIGHT_ALT.equals(scanCodeName)
+					|| DirectInputKeyCode.LEFT_SHIFT.equals(scanCodeName)
+					|| DirectInputKeyCode.RIGHT_SHIFT.equals(scanCodeName)
+					|| DirectInputKeyCode.LEFT_CONTROL.equals(scanCodeName)
+					|| DirectInputKeyCode.RIGHT_CONTROL.equals(scanCodeName)
+					|| DirectInputKeyCode.LEFT_WINDOWS.equals(scanCodeName)
+					|| DirectInputKeyCode.RIGHT_WINDOWS.equals(scanCodeName)) {
 				keyCodes = new Integer[0];
-				modifierCodes = new Integer[] { ScanCode.nameToScanCodeMap.get(scanCodeName) };
+				modifierCodes = new Integer[] { DirectInputKeyCode.nameToScanCodeMap.get(scanCodeName) };
 			} else {
-				keyCodes = new Integer[] { ScanCode.nameToScanCodeMap.get(scanCodeName) };
+				keyCodes = new Integer[] { DirectInputKeyCode.nameToScanCodeMap.get(scanCodeName) };
 				modifierCodes = new Integer[0];
 			}
 
@@ -160,16 +163,19 @@ public class OnScreenKeyboard extends JFrame {
 		public Dimension getPreferredSize() {
 			final Dimension preferredSize = super.getPreferredSize();
 
-			if (ScanCode.TAB.equals(scanCodeName))
+			if (DirectInputKeyCode.TAB.equals(scanCodeName))
 				preferredSize.width *= 1.5;
-			else if (ScanCode.RIGHT_SHIFT.equals(scanCodeName) || ScanCode.BACK_SLASH.equals(scanCodeName)
-					|| ScanCode.NUM_PAD0.equals(scanCodeName))
+			else if (DirectInputKeyCode.BACK_SLASH.equals(scanCodeName)
+					|| DirectInputKeyCode.NUM_PAD0.equals(scanCodeName))
 				preferredSize.width *= 2;
-			else if (ScanCode.LEFT_SHIFT.equals(scanCodeName) || ScanCode.RETURN.equals(scanCodeName)
-					|| ScanCode.BACK_SPACE.equals(scanCodeName))
+			else if (DirectInputKeyCode.LEFT_SHIFT.equals(scanCodeName)
+					|| DirectInputKeyCode.RETURN.equals(scanCodeName)
+					|| DirectInputKeyCode.BACK_SPACE.equals(scanCodeName))
 				preferredSize.width *= 2.5;
-			else if (ScanCode.SPACE.equals(scanCodeName))
-				preferredSize.width *= 5.5;
+			else if (DirectInputKeyCode.RIGHT_SHIFT.equals(scanCodeName))
+				preferredSize.width *= 3;
+			else if (DirectInputKeyCode.SPACE.equals(scanCodeName))
+				preferredSize.width *= 4.5;
 
 			return preferredSize;
 		}
@@ -235,9 +241,9 @@ public class OnScreenKeyboard extends JFrame {
 
 		private static final long serialVersionUID = 4014130700331413635L;
 
-		private boolean changed;
+		private volatile boolean changed;
 
-		private boolean locked;
+		private volatile boolean locked;
 
 		private final int virtualKeyCode;
 
@@ -298,6 +304,8 @@ public class OnScreenKeyboard extends JFrame {
 
 	}
 
+	private static final long serialVersionUID = -111088315813179371L;
+
 	private static final Color KEYBOARD_BUTTON_DEFAULT_BACKGROUND = new JButton().getBackground();
 
 	private static final Color KEYBOARD_BUTTON_DEFAULT_FOREGROUND = new JButton().getForeground();
@@ -306,13 +314,13 @@ public class OnScreenKeyboard extends JFrame {
 
 	private static final Set<AbstractKeyboardButton> heldButtons = ConcurrentHashMap.newKeySet();
 
-	private static final long serialVersionUID = -111088315813179371L;
-
-	private static final UUID ON_SCREEN_KEYBOARD_MODE_UUID = UUID.fromString("daf53639-9518-48db-bd63-19cde7bf9a96");
+	protected static final UUID ON_SCREEN_KEYBOARD_MODE_UUID = UUID.fromString("daf53639-9518-48db-bd63-19cde7bf9a96");
 
 	public static final Mode onScreenKeyboardMode;
 
-	private static final Color ROW_BACKGROUND = new Color(255, 255, 255, 64);
+	private static final int ROW_BORDER_WIDTH = 10;
+
+	private static final Color ROW_BACKGROUND = new Color(128, 128, 128, 64);
 
 	private static final Border defaultButtonBorder = UIManager.getBorder("Button.border");
 
@@ -326,60 +334,80 @@ public class OnScreenKeyboard extends JFrame {
 		onScreenKeyboardMode.setDescription(rb.getString("ON_SCREEN_KEYBOARD_MODE_DESCRIPTION"));
 	}
 
-	private final AbstractKeyboardButton[][] keyboardButtons = {
-			{ new DefaultKeyboardButton(ScanCode.ESCAPE), new DefaultKeyboardButton(ScanCode.F1),
-					new DefaultKeyboardButton(ScanCode.F2), new DefaultKeyboardButton(ScanCode.F3),
-					new DefaultKeyboardButton(ScanCode.F4), new DefaultKeyboardButton(ScanCode.F5),
-					new DefaultKeyboardButton(ScanCode.F6), new DefaultKeyboardButton(ScanCode.F7),
-					new DefaultKeyboardButton(ScanCode.F8), new DefaultKeyboardButton(ScanCode.F9),
-					new DefaultKeyboardButton(ScanCode.F10), new DefaultKeyboardButton(ScanCode.F11),
-					new DefaultKeyboardButton(ScanCode.F12), new DefaultKeyboardButton(ScanCode.SYS_RQ),
-					new LockKeyButton(KeyEvent.VK_SCROLL_LOCK), new DefaultKeyboardButton(ScanCode.PAUSE) },
-			{ new DefaultKeyboardButton(ScanCode.GRAVE), new DefaultKeyboardButton(ScanCode.D1),
-					new DefaultKeyboardButton(ScanCode.D2), new DefaultKeyboardButton(ScanCode.D3),
-					new DefaultKeyboardButton(ScanCode.D4), new DefaultKeyboardButton(ScanCode.D5),
-					new DefaultKeyboardButton(ScanCode.D6), new DefaultKeyboardButton(ScanCode.D7),
-					new DefaultKeyboardButton(ScanCode.D8), new DefaultKeyboardButton(ScanCode.D9),
-					new DefaultKeyboardButton(ScanCode.D0), new DefaultKeyboardButton(ScanCode.MINUS),
-					new DefaultKeyboardButton(ScanCode.EQUALS), new DefaultKeyboardButton(ScanCode.BACK_SPACE),
-					new LockKeyButton(KeyEvent.VK_NUM_LOCK), new DefaultKeyboardButton(ScanCode.DIVIDE),
-					new DefaultKeyboardButton(ScanCode.MULTIPLY), new DefaultKeyboardButton(ScanCode.NUM_PAD_MINUS) },
-			{ new DefaultKeyboardButton(ScanCode.TAB), new DefaultKeyboardButton(ScanCode.Q),
-					new DefaultKeyboardButton(ScanCode.W), new DefaultKeyboardButton(ScanCode.E),
-					new DefaultKeyboardButton(ScanCode.R), new DefaultKeyboardButton(ScanCode.T),
-					new DefaultKeyboardButton(ScanCode.Y), new DefaultKeyboardButton(ScanCode.U),
-					new DefaultKeyboardButton(ScanCode.I), new DefaultKeyboardButton(ScanCode.O),
-					new DefaultKeyboardButton(ScanCode.P), new DefaultKeyboardButton(ScanCode.LEFT_BRACKET),
-					new DefaultKeyboardButton(ScanCode.RIGHT_BRACKET), new DefaultKeyboardButton(ScanCode.BACK_SLASH),
-					new DefaultKeyboardButton(ScanCode.NUM_PAD7), new DefaultKeyboardButton(ScanCode.NUM_PAD8),
-					new DefaultKeyboardButton(ScanCode.NUM_PAD9), new DefaultKeyboardButton(ScanCode.NUM_PAD_PLUS) },
-			{ new LockKeyButton(KeyEvent.VK_CAPS_LOCK), new DefaultKeyboardButton(ScanCode.A),
-					new DefaultKeyboardButton(ScanCode.S), new DefaultKeyboardButton(ScanCode.D),
-					new DefaultKeyboardButton(ScanCode.F), new DefaultKeyboardButton(ScanCode.G),
-					new DefaultKeyboardButton(ScanCode.H), new DefaultKeyboardButton(ScanCode.J),
-					new DefaultKeyboardButton(ScanCode.K), new DefaultKeyboardButton(ScanCode.L),
-					new DefaultKeyboardButton(ScanCode.SEMI_COLON), new DefaultKeyboardButton(ScanCode.APOSTROPHE),
-					new DefaultKeyboardButton(ScanCode.RETURN), new DefaultKeyboardButton(ScanCode.NUM_PAD4),
-					new DefaultKeyboardButton(ScanCode.NUM_PAD5), new DefaultKeyboardButton(ScanCode.NUM_PAD6) },
-			{ new DefaultKeyboardButton(ScanCode.LEFT_SHIFT), new DefaultKeyboardButton(ScanCode.Z),
-					new DefaultKeyboardButton(ScanCode.X), new DefaultKeyboardButton(ScanCode.C),
-					new DefaultKeyboardButton(ScanCode.V), new DefaultKeyboardButton(ScanCode.B),
-					new DefaultKeyboardButton(ScanCode.N), new DefaultKeyboardButton(ScanCode.M),
-					new DefaultKeyboardButton(ScanCode.COMMA), new DefaultKeyboardButton(ScanCode.PERIOD),
-					new DefaultKeyboardButton(ScanCode.SLASH), new DefaultKeyboardButton(ScanCode.RIGHT_SHIFT),
-					new DefaultKeyboardButton(ScanCode.NUM_PAD1), new DefaultKeyboardButton(ScanCode.NUM_PAD2),
-					new DefaultKeyboardButton(ScanCode.NUM_PAD3) },
-			{ new DefaultKeyboardButton(ScanCode.LEFT_CONTROL), new DefaultKeyboardButton(ScanCode.LEFT_WINDOWS),
-					new DefaultKeyboardButton(ScanCode.LEFT_ALT), new DefaultKeyboardButton(ScanCode.SPACE),
-					new DefaultKeyboardButton(ScanCode.RIGHT_ALT), new DefaultKeyboardButton(ScanCode.RIGHT_WINDOWS),
-					new DefaultKeyboardButton(ScanCode.RIGHT_CONTROL), new DefaultKeyboardButton(ScanCode.UP_ARROW),
-					new DefaultKeyboardButton(ScanCode.DOWN_ARROW), new DefaultKeyboardButton(ScanCode.LEFT_ARROW),
-					new DefaultKeyboardButton(ScanCode.RIGHT_ARROW), new DefaultKeyboardButton(ScanCode.NUM_PAD0),
-					new DefaultKeyboardButton(ScanCode.NUM_PAD_COMMA),
-					new DefaultKeyboardButton(ScanCode.NUM_PAD_ENTER) } };
+	private final AbstractKeyboardButton[][] keyboardButtons = { { new DefaultKeyboardButton(DirectInputKeyCode.ESCAPE),
+			new DefaultKeyboardButton(DirectInputKeyCode.F1), new DefaultKeyboardButton(DirectInputKeyCode.F2),
+			new DefaultKeyboardButton(DirectInputKeyCode.F3), new DefaultKeyboardButton(DirectInputKeyCode.F4),
+			new DefaultKeyboardButton(DirectInputKeyCode.F5), new DefaultKeyboardButton(DirectInputKeyCode.F6),
+			new DefaultKeyboardButton(DirectInputKeyCode.F7), new DefaultKeyboardButton(DirectInputKeyCode.F8),
+			new DefaultKeyboardButton(DirectInputKeyCode.F9), new DefaultKeyboardButton(DirectInputKeyCode.F10),
+			new DefaultKeyboardButton(DirectInputKeyCode.F11), new DefaultKeyboardButton(DirectInputKeyCode.F12),
+			new DefaultKeyboardButton(DirectInputKeyCode.SYS_RQ), new LockKeyButton(KeyEvent.VK_SCROLL_LOCK),
+			new DefaultKeyboardButton(DirectInputKeyCode.PAUSE) },
+			{ new DefaultKeyboardButton(DirectInputKeyCode.GRAVE), new DefaultKeyboardButton(DirectInputKeyCode.D1),
+					new DefaultKeyboardButton(DirectInputKeyCode.D2), new DefaultKeyboardButton(DirectInputKeyCode.D3),
+					new DefaultKeyboardButton(DirectInputKeyCode.D4), new DefaultKeyboardButton(DirectInputKeyCode.D5),
+					new DefaultKeyboardButton(DirectInputKeyCode.D6), new DefaultKeyboardButton(DirectInputKeyCode.D7),
+					new DefaultKeyboardButton(DirectInputKeyCode.D8), new DefaultKeyboardButton(DirectInputKeyCode.D9),
+					new DefaultKeyboardButton(DirectInputKeyCode.D0),
+					new DefaultKeyboardButton(DirectInputKeyCode.MINUS),
+					new DefaultKeyboardButton(DirectInputKeyCode.EQUALS),
+					new DefaultKeyboardButton(DirectInputKeyCode.BACK_SPACE), new LockKeyButton(KeyEvent.VK_NUM_LOCK),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIVIDE),
+					new DefaultKeyboardButton(DirectInputKeyCode.MULTIPLY),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD_MINUS) },
+			{ new DefaultKeyboardButton(DirectInputKeyCode.TAB), new DefaultKeyboardButton(DirectInputKeyCode.Q),
+					new DefaultKeyboardButton(DirectInputKeyCode.W), new DefaultKeyboardButton(DirectInputKeyCode.E),
+					new DefaultKeyboardButton(DirectInputKeyCode.R), new DefaultKeyboardButton(DirectInputKeyCode.T),
+					new DefaultKeyboardButton(DirectInputKeyCode.Y), new DefaultKeyboardButton(DirectInputKeyCode.U),
+					new DefaultKeyboardButton(DirectInputKeyCode.I), new DefaultKeyboardButton(DirectInputKeyCode.O),
+					new DefaultKeyboardButton(DirectInputKeyCode.P),
+					new DefaultKeyboardButton(DirectInputKeyCode.LEFT_BRACKET),
+					new DefaultKeyboardButton(DirectInputKeyCode.RIGHT_BRACKET),
+					new DefaultKeyboardButton(DirectInputKeyCode.BACK_SLASH),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD7),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD8),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD9),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD_PLUS) },
+			{ new LockKeyButton(KeyEvent.VK_CAPS_LOCK), new DefaultKeyboardButton(DirectInputKeyCode.A),
+					new DefaultKeyboardButton(DirectInputKeyCode.S), new DefaultKeyboardButton(DirectInputKeyCode.D),
+					new DefaultKeyboardButton(DirectInputKeyCode.F), new DefaultKeyboardButton(DirectInputKeyCode.G),
+					new DefaultKeyboardButton(DirectInputKeyCode.H), new DefaultKeyboardButton(DirectInputKeyCode.J),
+					new DefaultKeyboardButton(DirectInputKeyCode.K), new DefaultKeyboardButton(DirectInputKeyCode.L),
+					new DefaultKeyboardButton(DirectInputKeyCode.SEMI_COLON),
+					new DefaultKeyboardButton(DirectInputKeyCode.APOSTROPHE),
+					new DefaultKeyboardButton(DirectInputKeyCode.RETURN),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD4),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD5),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD6) },
+			{ new DefaultKeyboardButton(DirectInputKeyCode.LEFT_SHIFT), new DefaultKeyboardButton(DirectInputKeyCode.Z),
+					new DefaultKeyboardButton(DirectInputKeyCode.X), new DefaultKeyboardButton(DirectInputKeyCode.C),
+					new DefaultKeyboardButton(DirectInputKeyCode.V), new DefaultKeyboardButton(DirectInputKeyCode.B),
+					new DefaultKeyboardButton(DirectInputKeyCode.N), new DefaultKeyboardButton(DirectInputKeyCode.M),
+					new DefaultKeyboardButton(DirectInputKeyCode.COMMA),
+					new DefaultKeyboardButton(DirectInputKeyCode.PERIOD),
+					new DefaultKeyboardButton(DirectInputKeyCode.SLASH),
+					new DefaultKeyboardButton(DirectInputKeyCode.RIGHT_SHIFT),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD1),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD2),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD3) },
+			{ new DefaultKeyboardButton(DirectInputKeyCode.LEFT_CONTROL),
+					new DefaultKeyboardButton(DirectInputKeyCode.LEFT_WINDOWS),
+					new DefaultKeyboardButton(DirectInputKeyCode.LEFT_ALT),
+					new DefaultKeyboardButton(DirectInputKeyCode.SPACE),
+					new DefaultKeyboardButton(DirectInputKeyCode.RIGHT_ALT),
+					new DefaultKeyboardButton(DirectInputKeyCode.RIGHT_WINDOWS),
+					new DefaultKeyboardButton(DirectInputKeyCode.APPS),
+					new DefaultKeyboardButton(DirectInputKeyCode.RIGHT_CONTROL),
+					new DefaultKeyboardButton(DirectInputKeyCode.UP_ARROW),
+					new DefaultKeyboardButton(DirectInputKeyCode.DOWN_ARROW),
+					new DefaultKeyboardButton(DirectInputKeyCode.LEFT_ARROW),
+					new DefaultKeyboardButton(DirectInputKeyCode.RIGHT_ARROW),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD0),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD_COMMA),
+					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD_ENTER) } };
 
-	private boolean anyChanges;
-	private boolean releaseAllAfterPoll;
+	private volatile boolean anyChanges;
+	private volatile boolean releaseAllAfterPoll;
 
 	private int selectedRow;
 	private int selectedColumn;
@@ -401,8 +429,8 @@ public class OnScreenKeyboard extends JFrame {
 			flowLayout.setVgap(0);
 			final JPanel rowPanel = new JPanel(flowLayout);
 			rowPanel.setBackground(ROW_BACKGROUND);
-			rowPanel.setBorder(
-					BorderFactory.createEmptyBorder(row == 0 ? 5 : 0, 5, row == keyboardButtons.length - 1 ? 5 : 0, 5));
+			rowPanel.setBorder(BorderFactory.createEmptyBorder(row == 0 ? ROW_BORDER_WIDTH : 0, ROW_BORDER_WIDTH,
+					row == keyboardButtons.length - 1 ? ROW_BORDER_WIDTH : 0, ROW_BORDER_WIDTH));
 
 			for (int column = 0; column < keyboardButtons[row].length; column++)
 				rowPanel.add(keyboardButtons[row][column]);

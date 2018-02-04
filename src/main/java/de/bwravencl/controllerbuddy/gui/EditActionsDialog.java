@@ -62,13 +62,13 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.DefaultFormatter;
 
+import de.bwravencl.controllerbuddy.input.DirectInputKeyCode;
 import de.bwravencl.controllerbuddy.input.Input;
 import de.bwravencl.controllerbuddy.input.Input.VirtualAxis;
 import de.bwravencl.controllerbuddy.input.KeyStroke;
 import de.bwravencl.controllerbuddy.input.LockKey;
 import de.bwravencl.controllerbuddy.input.Mode;
 import de.bwravencl.controllerbuddy.input.Profile;
-import de.bwravencl.controllerbuddy.input.ScanCode;
 import de.bwravencl.controllerbuddy.input.action.AxisToAxisAction;
 import de.bwravencl.controllerbuddy.input.action.AxisToButtonAction;
 import de.bwravencl.controllerbuddy.input.action.AxisToCursorAction;
@@ -265,7 +265,7 @@ public class EditActionsDialog extends JDialog {
 				final Set<Integer> scanCodes = new HashSet<>();
 
 				for (final Object o : ((JList<?>) e.getSource()).getSelectedValuesList())
-					scanCodes.add(ScanCode.nameToScanCodeMap.get(o));
+					scanCodes.add(DirectInputKeyCode.nameToScanCodeMap.get(o));
 
 				final Integer[] scanCodesArray = scanCodes.toArray(new Integer[scanCodes.size()]);
 
@@ -716,7 +716,8 @@ public class EditActionsDialog extends JDialog {
 									propertyPanel.add(comboBox);
 								} else if (KeyStroke.class == clazz) {
 									final KeyStroke keyStroke = (KeyStroke) getterMethod.invoke(selectedAssignedAction);
-									final Set<String> availableScanCodes = ScanCode.nameToScanCodeMap.keySet();
+									final Set<String> availableScanCodes = DirectInputKeyCode.nameToScanCodeMap
+											.keySet();
 
 									final JPanel modifiersPanel = new JPanel();
 									modifiersPanel.setLayout(new BoxLayout(modifiersPanel, BoxLayout.PAGE_AXIS));
@@ -731,7 +732,7 @@ public class EditActionsDialog extends JDialog {
 
 									final List<String> addedModifiers = new ArrayList<>();
 									for (final int c1 : keyStroke.getModifierCodes())
-										addedModifiers.add(ScanCode.scanCodeToNameMap.get(c1));
+										addedModifiers.add(DirectInputKeyCode.scanCodeToNameMap.get(c1));
 									for (final String s1 : addedModifiers) {
 										final int index1 = getListModelIndex(modifierList.getModel(), s1);
 										if (index1 >= 0)
@@ -754,7 +755,7 @@ public class EditActionsDialog extends JDialog {
 											new JListSetPropertyListSelectionListener(m, keyStroke, false));
 									final List<String> addedKeys = new ArrayList<>();
 									for (final int c2 : keyStroke.getKeyCodes())
-										addedKeys.add(ScanCode.scanCodeToNameMap.get(c2));
+										addedKeys.add(DirectInputKeyCode.scanCodeToNameMap.get(c2));
 									for (final String s2 : addedKeys) {
 										final int index2 = getListModelIndex(keyList.getModel(), s2);
 										if (index2 >= 0)

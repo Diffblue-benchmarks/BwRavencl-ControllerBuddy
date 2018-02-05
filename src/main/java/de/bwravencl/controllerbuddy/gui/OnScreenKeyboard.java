@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.geom.RoundRectangle2D;
@@ -56,13 +57,17 @@ public class OnScreenKeyboard extends JFrame {
 
 		private static final long serialVersionUID = 4567858619453576258L;
 
+		private static final int BASE_BUTTON_SIZE = 55;
+
 		public AbstractKeyboardButton(final String text) {
 			super(text);
+
+			setMargin(new Insets(1, 1, 1, 1));
 		}
 
 		@Override
 		public Dimension getPreferredSize() {
-			return new Dimension(55, 55);
+			return new Dimension(BASE_BUTTON_SIZE, BASE_BUTTON_SIZE);
 		}
 
 		protected abstract void poll(final Input input);
@@ -87,31 +92,32 @@ public class OnScreenKeyboard extends JFrame {
 
 		private volatile long beginPress;
 
-		private final String scanCodeName;
+		private final String directInputKeyCodeName;
 
 		private final KeyStroke keyStroke;
 
 		private TimerTask lockTimerTask;
 
-		public DefaultKeyboardButton(final String scanCodeName) {
-			super(scanCodeName);
+		public DefaultKeyboardButton(final String directInputKeyCodeName) {
+			super(getShortDefaultKeyName(directInputKeyCodeName));
 
-			this.scanCodeName = scanCodeName;
+			this.directInputKeyCodeName = directInputKeyCodeName;
 
 			final Integer[] keyCodes;
 			final Integer[] modifierCodes;
 
-			if (DirectInputKeyCode.LEFT_ALT.equals(scanCodeName) || DirectInputKeyCode.RIGHT_ALT.equals(scanCodeName)
-					|| DirectInputKeyCode.LEFT_SHIFT.equals(scanCodeName)
-					|| DirectInputKeyCode.RIGHT_SHIFT.equals(scanCodeName)
-					|| DirectInputKeyCode.LEFT_CONTROL.equals(scanCodeName)
-					|| DirectInputKeyCode.RIGHT_CONTROL.equals(scanCodeName)
-					|| DirectInputKeyCode.LEFT_WINDOWS.equals(scanCodeName)
-					|| DirectInputKeyCode.RIGHT_WINDOWS.equals(scanCodeName)) {
+			if (DirectInputKeyCode.DIK_LMENU.equals(directInputKeyCodeName)
+					|| DirectInputKeyCode.DIK_RMENU.equals(directInputKeyCodeName)
+					|| DirectInputKeyCode.DIK_LSHIFT.equals(directInputKeyCodeName)
+					|| DirectInputKeyCode.DIK_RSHIFT.equals(directInputKeyCodeName)
+					|| DirectInputKeyCode.DIK_LCONTROL.equals(directInputKeyCodeName)
+					|| DirectInputKeyCode.DIK_RCONTROL.equals(directInputKeyCodeName)
+					|| DirectInputKeyCode.DIK_LWIN.equals(directInputKeyCodeName)
+					|| DirectInputKeyCode.DIK_RWIN.equals(directInputKeyCodeName)) {
 				keyCodes = new Integer[0];
-				modifierCodes = new Integer[] { DirectInputKeyCode.nameToScanCodeMap.get(scanCodeName) };
+				modifierCodes = new Integer[] { DirectInputKeyCode.nameToScanCodeMap.get(directInputKeyCodeName) };
 			} else {
-				keyCodes = new Integer[] { DirectInputKeyCode.nameToScanCodeMap.get(scanCodeName) };
+				keyCodes = new Integer[] { DirectInputKeyCode.nameToScanCodeMap.get(directInputKeyCodeName) };
 				modifierCodes = new Integer[0];
 			}
 
@@ -168,18 +174,23 @@ public class OnScreenKeyboard extends JFrame {
 		public Dimension getPreferredSize() {
 			final Dimension preferredSize = super.getPreferredSize();
 
-			if (DirectInputKeyCode.TAB.equals(scanCodeName))
+			if (DirectInputKeyCode.DIK_INSERT.equals(directInputKeyCodeName)
+					|| DirectInputKeyCode.DIK_DELETE.equals(directInputKeyCodeName)
+					|| DirectInputKeyCode.DIK_HOME.equals(directInputKeyCodeName)
+					|| DirectInputKeyCode.DIK_END.equals(directInputKeyCodeName))
+				preferredSize.width *= 0.88;
+			else if (DirectInputKeyCode.DIK_TAB.equals(directInputKeyCodeName))
 				preferredSize.width *= 1.5;
-			else if (DirectInputKeyCode.BACK_SLASH.equals(scanCodeName)
-					|| DirectInputKeyCode.NUM_PAD0.equals(scanCodeName))
+			else if (DirectInputKeyCode.DIK_BACKSLASH.equals(directInputKeyCodeName)
+					|| DirectInputKeyCode.DIK_NUMPAD0.equals(directInputKeyCodeName))
 				preferredSize.width *= 2;
-			else if (DirectInputKeyCode.LEFT_SHIFT.equals(scanCodeName)
-					|| DirectInputKeyCode.RETURN.equals(scanCodeName)
-					|| DirectInputKeyCode.BACK_SPACE.equals(scanCodeName))
+			else if (DirectInputKeyCode.DIK_LSHIFT.equals(directInputKeyCodeName)
+					|| DirectInputKeyCode.DIK_RETURN.equals(directInputKeyCodeName)
+					|| DirectInputKeyCode.DIK_BACK.equals(directInputKeyCodeName))
 				preferredSize.width *= 2.5;
-			else if (DirectInputKeyCode.RIGHT_SHIFT.equals(scanCodeName))
+			else if (DirectInputKeyCode.DIK_RSHIFT.equals(directInputKeyCodeName))
 				preferredSize.width *= 3;
-			else if (DirectInputKeyCode.SPACE.equals(scanCodeName))
+			else if (DirectInputKeyCode.DIK_SPACE.equals(directInputKeyCodeName))
 				preferredSize.width *= 4.5;
 
 			return preferredSize;
@@ -259,7 +270,7 @@ public class OnScreenKeyboard extends JFrame {
 		private boolean wasUp = true;
 
 		public LockKeyButton(final int virtualKeyCode) {
-			super(LockKey.virtualKeyCodeToLockKeyMap.get(virtualKeyCode).name);
+			super(getShortLockKeyName(LockKey.virtualKeyCodeToLockKeyMap.get(virtualKeyCode).name));
 			this.virtualKeyCode = virtualKeyCode;
 
 			addActionListener(arg0 -> {
@@ -345,77 +356,124 @@ public class OnScreenKeyboard extends JFrame {
 		onScreenKeyboardMode.setDescription(rb.getString("ON_SCREEN_KEYBOARD_MODE_DESCRIPTION"));
 	}
 
-	private final AbstractKeyboardButton[][] keyboardButtons = { { new DefaultKeyboardButton(DirectInputKeyCode.ESCAPE),
-			new DefaultKeyboardButton(DirectInputKeyCode.F1), new DefaultKeyboardButton(DirectInputKeyCode.F2),
-			new DefaultKeyboardButton(DirectInputKeyCode.F3), new DefaultKeyboardButton(DirectInputKeyCode.F4),
-			new DefaultKeyboardButton(DirectInputKeyCode.F5), new DefaultKeyboardButton(DirectInputKeyCode.F6),
-			new DefaultKeyboardButton(DirectInputKeyCode.F7), new DefaultKeyboardButton(DirectInputKeyCode.F8),
-			new DefaultKeyboardButton(DirectInputKeyCode.F9), new DefaultKeyboardButton(DirectInputKeyCode.F10),
-			new DefaultKeyboardButton(DirectInputKeyCode.F11), new DefaultKeyboardButton(DirectInputKeyCode.F12),
-			new DefaultKeyboardButton(DirectInputKeyCode.SYS_RQ), new LockKeyButton(KeyEvent.VK_SCROLL_LOCK),
-			new DefaultKeyboardButton(DirectInputKeyCode.PAUSE) },
-			{ new DefaultKeyboardButton(DirectInputKeyCode.GRAVE), new DefaultKeyboardButton(DirectInputKeyCode.D1),
-					new DefaultKeyboardButton(DirectInputKeyCode.D2), new DefaultKeyboardButton(DirectInputKeyCode.D3),
-					new DefaultKeyboardButton(DirectInputKeyCode.D4), new DefaultKeyboardButton(DirectInputKeyCode.D5),
-					new DefaultKeyboardButton(DirectInputKeyCode.D6), new DefaultKeyboardButton(DirectInputKeyCode.D7),
-					new DefaultKeyboardButton(DirectInputKeyCode.D8), new DefaultKeyboardButton(DirectInputKeyCode.D9),
-					new DefaultKeyboardButton(DirectInputKeyCode.D0),
-					new DefaultKeyboardButton(DirectInputKeyCode.MINUS),
-					new DefaultKeyboardButton(DirectInputKeyCode.EQUALS),
-					new DefaultKeyboardButton(DirectInputKeyCode.BACK_SPACE), new LockKeyButton(KeyEvent.VK_NUM_LOCK),
-					new DefaultKeyboardButton(DirectInputKeyCode.DIVIDE),
-					new DefaultKeyboardButton(DirectInputKeyCode.MULTIPLY),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD_MINUS) },
-			{ new DefaultKeyboardButton(DirectInputKeyCode.TAB), new DefaultKeyboardButton(DirectInputKeyCode.Q),
-					new DefaultKeyboardButton(DirectInputKeyCode.W), new DefaultKeyboardButton(DirectInputKeyCode.E),
-					new DefaultKeyboardButton(DirectInputKeyCode.R), new DefaultKeyboardButton(DirectInputKeyCode.T),
-					new DefaultKeyboardButton(DirectInputKeyCode.Y), new DefaultKeyboardButton(DirectInputKeyCode.U),
-					new DefaultKeyboardButton(DirectInputKeyCode.I), new DefaultKeyboardButton(DirectInputKeyCode.O),
-					new DefaultKeyboardButton(DirectInputKeyCode.P),
-					new DefaultKeyboardButton(DirectInputKeyCode.LEFT_BRACKET),
-					new DefaultKeyboardButton(DirectInputKeyCode.RIGHT_BRACKET),
-					new DefaultKeyboardButton(DirectInputKeyCode.BACK_SLASH),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD7),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD8),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD9),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD_PLUS) },
-			{ new LockKeyButton(KeyEvent.VK_CAPS_LOCK), new DefaultKeyboardButton(DirectInputKeyCode.A),
-					new DefaultKeyboardButton(DirectInputKeyCode.S), new DefaultKeyboardButton(DirectInputKeyCode.D),
-					new DefaultKeyboardButton(DirectInputKeyCode.F), new DefaultKeyboardButton(DirectInputKeyCode.G),
-					new DefaultKeyboardButton(DirectInputKeyCode.H), new DefaultKeyboardButton(DirectInputKeyCode.J),
-					new DefaultKeyboardButton(DirectInputKeyCode.K), new DefaultKeyboardButton(DirectInputKeyCode.L),
-					new DefaultKeyboardButton(DirectInputKeyCode.SEMI_COLON),
-					new DefaultKeyboardButton(DirectInputKeyCode.APOSTROPHE),
-					new DefaultKeyboardButton(DirectInputKeyCode.RETURN),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD4),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD5),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD6) },
-			{ new DefaultKeyboardButton(DirectInputKeyCode.LEFT_SHIFT), new DefaultKeyboardButton(DirectInputKeyCode.Z),
-					new DefaultKeyboardButton(DirectInputKeyCode.X), new DefaultKeyboardButton(DirectInputKeyCode.C),
-					new DefaultKeyboardButton(DirectInputKeyCode.V), new DefaultKeyboardButton(DirectInputKeyCode.B),
-					new DefaultKeyboardButton(DirectInputKeyCode.N), new DefaultKeyboardButton(DirectInputKeyCode.M),
-					new DefaultKeyboardButton(DirectInputKeyCode.COMMA),
-					new DefaultKeyboardButton(DirectInputKeyCode.PERIOD),
-					new DefaultKeyboardButton(DirectInputKeyCode.SLASH),
-					new DefaultKeyboardButton(DirectInputKeyCode.RIGHT_SHIFT),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD1),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD2),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD3) },
-			{ new DefaultKeyboardButton(DirectInputKeyCode.LEFT_CONTROL),
-					new DefaultKeyboardButton(DirectInputKeyCode.LEFT_WINDOWS),
-					new DefaultKeyboardButton(DirectInputKeyCode.LEFT_ALT),
-					new DefaultKeyboardButton(DirectInputKeyCode.SPACE),
-					new DefaultKeyboardButton(DirectInputKeyCode.RIGHT_ALT),
-					new DefaultKeyboardButton(DirectInputKeyCode.RIGHT_WINDOWS),
-					new DefaultKeyboardButton(DirectInputKeyCode.APPS),
-					new DefaultKeyboardButton(DirectInputKeyCode.RIGHT_CONTROL),
-					new DefaultKeyboardButton(DirectInputKeyCode.UP_ARROW),
-					new DefaultKeyboardButton(DirectInputKeyCode.DOWN_ARROW),
-					new DefaultKeyboardButton(DirectInputKeyCode.LEFT_ARROW),
-					new DefaultKeyboardButton(DirectInputKeyCode.RIGHT_ARROW),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD0),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD_COMMA),
-					new DefaultKeyboardButton(DirectInputKeyCode.NUM_PAD_ENTER) } };
+	private static String getShortDefaultKeyName(final String directInputKeyCodeName) {
+		String shortName = directInputKeyCodeName;
+
+		shortName = shortName.replaceFirst("L ", "");
+		shortName = shortName.replaceFirst("R ", "");
+		shortName = shortName.replaceFirst("Num", "");
+		shortName = shortName.replaceFirst("App ", "");
+		shortName = shortName.replaceAll(" Arrow", "");
+
+		return shortName;
+	}
+
+	private static String getShortLockKeyName(final String lockKeyName) {
+		String shortName = lockKeyName;
+
+		if (!lockKeyName.equals(LockKey.CAPS_LOCK))
+			shortName = shortName.replaceFirst(LockKey.LOCK_SUFFIX, "Lk");
+
+		return shortName;
+	}
+
+	private final AbstractKeyboardButton[][] keyboardButtons = { {
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_ESCAPE),
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_F1), new DefaultKeyboardButton(DirectInputKeyCode.DIK_F2),
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_F3), new DefaultKeyboardButton(DirectInputKeyCode.DIK_F4),
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_F5), new DefaultKeyboardButton(DirectInputKeyCode.DIK_F6),
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_F7), new DefaultKeyboardButton(DirectInputKeyCode.DIK_F8),
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_F9), new DefaultKeyboardButton(DirectInputKeyCode.DIK_F10),
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_F11),
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_F12),
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_SYSRQ), new LockKeyButton(KeyEvent.VK_SCROLL_LOCK),
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_PAUSE),
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_INSERT),
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_DELETE),
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_HOME),
+			new DefaultKeyboardButton(DirectInputKeyCode.DIK_END) },
+			{ new DefaultKeyboardButton(DirectInputKeyCode.DIK_GRAVE),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_1),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_2),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_3),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_4),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_5),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_6),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_7),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_8),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_9),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_0),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_MINUS),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_EQUALS),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_BACK), new LockKeyButton(KeyEvent.VK_NUM_LOCK),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_DIVIDE),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_MULTIPLY),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_SUBTRACT) },
+			{ new DefaultKeyboardButton(DirectInputKeyCode.DIK_TAB),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_Q),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_W),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_E),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_R),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_T),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_Y),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_U),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_I),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_O),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_P),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_LBRACKET),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_RBRACKET),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_BACKSLASH),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_NUMPAD7),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_NUMPAD8),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_NUMPAD9),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_ADD) },
+			{ new LockKeyButton(KeyEvent.VK_CAPS_LOCK), new DefaultKeyboardButton(DirectInputKeyCode.DIK_A),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_S),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_D),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_F),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_G),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_H),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_J),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_K),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_L),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_SEMICOLON),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_APOSTROPHE),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_RETURN),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_NUMPAD4),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_NUMPAD5),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_NUMPAD6),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_PRIOR) },
+			{ new DefaultKeyboardButton(DirectInputKeyCode.DIK_LSHIFT),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_Z),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_X),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_C),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_V),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_B),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_N),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_M),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_COMMA),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_PERIOD),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_SLASH),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_RSHIFT),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_NUMPAD1),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_NUMPAD2),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_NUMPAD3),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_NEXT) },
+			{ new DefaultKeyboardButton(DirectInputKeyCode.DIK_LCONTROL),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_LWIN),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_LMENU),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_SPACE),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_RMENU),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_RWIN),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_APPS),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_RCONTROL),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_UP),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_DOWN),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_LEFT),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_RIGHT),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_NUMPAD0),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_NUMPADCOMMA),
+					new DefaultKeyboardButton(DirectInputKeyCode.DIK_NUMPADENTER) } };
 
 	private volatile boolean anyChanges;
 	private volatile boolean releaseAllAfterPoll;

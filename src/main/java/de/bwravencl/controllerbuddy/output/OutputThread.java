@@ -17,6 +17,7 @@
 
 package de.bwravencl.controllerbuddy.output;
 
+import java.lang.System.Logger;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -30,6 +31,8 @@ import net.brockmatt.util.ResourceBundleUtil;
 import net.java.games.input.Controller;
 
 public abstract class OutputThread extends Thread {
+
+	private static final System.Logger log = System.getLogger(OutputThread.class.getName());
 
 	public static final int DEFAULT_POLL_INTERVAL = 10;
 
@@ -58,7 +61,7 @@ public abstract class OutputThread extends Thread {
 						rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
 			});
 		} catch (InvocationTargetException | InterruptedException e) {
-			e.printStackTrace();
+			log.log(Logger.Level.ERROR, e.getMessage(), e);
 		}
 
 		input.getController();
@@ -76,7 +79,7 @@ public abstract class OutputThread extends Thread {
 						rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
 			});
 		} catch (InvocationTargetException | InterruptedException e) {
-			e.printStackTrace();
+			log.log(Logger.Level.ERROR, e.getMessage(), e);
 		}
 
 		new Thread() {

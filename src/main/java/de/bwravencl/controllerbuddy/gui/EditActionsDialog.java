@@ -25,6 +25,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
+import java.lang.System.Logger;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -132,7 +133,7 @@ public class EditActionsDialog extends JDialog {
 						- (hasModeAction() && !(action instanceof ButtonToModeAction) ? 1 : 0));
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException | NoSuchMethodException | SecurityException e1) {
-				e1.printStackTrace();
+				log.log(Logger.Level.ERROR, e1.getMessage(), e1);
 			}
 		}
 
@@ -154,7 +155,7 @@ public class EditActionsDialog extends JDialog {
 				description = clazz.getConstructor().newInstance().toString();
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException | NoSuchMethodException | SecurityException e) {
-				e.printStackTrace();
+				log.log(Logger.Level.ERROR, e.getMessage(), e);
 			}
 
 			return description;
@@ -212,7 +213,7 @@ public class EditActionsDialog extends JDialog {
 			try {
 				setterMethod.invoke(selectedAssignedAction, ((JCheckBox) e.getSource()).isSelected());
 			} catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
-				e1.printStackTrace();
+				log.log(Logger.Level.ERROR, e1.getMessage(), e1);
 			}
 		}
 
@@ -233,7 +234,7 @@ public class EditActionsDialog extends JDialog {
 			try {
 				setterMethod.invoke(selectedAssignedAction, ((JComboBox<?>) e.getSource()).getSelectedItem());
 			} catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
-				e1.printStackTrace();
+				log.log(Logger.Level.ERROR, e1.getMessage(), e1);
 			}
 		}
 
@@ -269,7 +270,7 @@ public class EditActionsDialog extends JDialog {
 
 				setterMethod.invoke(selectedAssignedAction, keyStroke);
 			} catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
-				e1.printStackTrace();
+				log.log(Logger.Level.ERROR, e1.getMessage(), e1);
 			}
 		}
 
@@ -291,7 +292,7 @@ public class EditActionsDialog extends JDialog {
 				setterMethod.invoke(selectedAssignedAction,
 						value instanceof Double ? ((Double) value).floatValue() : value);
 			} catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
-				e1.printStackTrace();
+				log.log(Logger.Level.ERROR, e1.getMessage(), e1);
 			}
 		}
 
@@ -368,10 +369,10 @@ public class EditActionsDialog extends JDialog {
 
 	}
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 8876286334367723566L;
+
+	private static final System.Logger log = System.getLogger(EditActionsDialog.class.getName());
+
 	private static final Class<?>[] AXIS_ACTION_CLASSES = { AxisToAxisAction.class, AxisToButtonAction.class,
 			AxisToCursorAction.class, AxisToKeyAction.class, AxisToMouseButtonAction.class,
 			AxisToRelativeAxisAction.class, AxisToScrollAction.class, NullAction.class };
@@ -384,6 +385,7 @@ public class EditActionsDialog extends JDialog {
 			NullAction.class };
 	private static final Class<?>[] ON_SCREEN_KEYBOARD_ACTION_CLASSES = { ButtonToPressOnScreenKeyboardKeyAction.class,
 			ButtonToSelectOnScreenKeyboardKeyAction.class };
+
 	private static final String ACTION_PROPERTY_GETTER_PREFIX_DEFAULT = "get";
 	private static final String ACTION_PROPERTY_GETTER_PREFIX_BOOLEAN = "is";
 	private static final String ACTION_PROPERTY_SETTER_PREFIX = "set";
@@ -435,7 +437,7 @@ public class EditActionsDialog extends JDialog {
 
 			init(input);
 		} catch (final CloneNotSupportedException e) {
-			e.printStackTrace();
+			log.log(Logger.Level.ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -475,7 +477,7 @@ public class EditActionsDialog extends JDialog {
 
 			init(input);
 		} catch (final CloneNotSupportedException e) {
-			e.printStackTrace();
+			log.log(Logger.Level.ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -759,10 +761,10 @@ public class EditActionsDialog extends JDialog {
 								editActionsButton.setPreferredSize(Main.BUTTON_DIMENSION);
 								propertyPanel.add(editActionsButton);
 							} else
-								throw new Exception(getClass().getName()
+								throw new UnsupportedOperationException(getClass().getName()
 										+ ": GUI representation implementation missing for " + clazz.getName());
 						} catch (final Exception e1) {
-							e1.printStackTrace();
+							log.log(Logger.Level.ERROR, e1.getMessage(), e1);
 						}
 					}
 				}

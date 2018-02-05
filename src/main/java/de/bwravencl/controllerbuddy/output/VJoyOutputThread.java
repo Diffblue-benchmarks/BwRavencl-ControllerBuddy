@@ -19,6 +19,7 @@ package de.bwravencl.controllerbuddy.output;
 
 import java.awt.Toolkit;
 import java.io.File;
+import java.lang.System.Logger;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -54,9 +55,12 @@ import de.bwravencl.controllerbuddy.input.action.ToButtonAction;
 
 public abstract class VJoyOutputThread extends OutputThread {
 
+	private static final System.Logger log = System.getLogger(VJoyOutputThread.class.getName());
+
 	public static final int DEFAULT_VJOY_DEVICE = 1;
 	public static final String LIBRARY_NAME = "vJoyInterface";
 	public static final String LIBRARY_FILENAME = LIBRARY_NAME + ".dll";
+
 	private static final long KEYEVENTF_KEYUP = 0x0002L;
 	private static final long KEYEVENTF_SCANCODE = 0x0008L;
 	private static final long MOUSEEVENTF_MOVE = 0x0001L;
@@ -378,7 +382,7 @@ public abstract class VJoyOutputThread extends OutputThread {
 
 			return true;
 		} catch (final UnsatisfiedLinkError e) {
-			e.printStackTrace();
+			log.log(Logger.Level.ERROR, e.getMessage(), e);
 			SwingUtilities.invokeLater(() -> {
 				JOptionPane.showMessageDialog(main.getFrame(), rb.getString("COULD_NOT_LOAD_VJOY_LIBRARY_DIALOG_TEXT"),
 						rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
@@ -481,7 +485,7 @@ public abstract class VJoyOutputThread extends OutputThread {
 					if (confirmDialogTask.get() == JOptionPane.YES_OPTION)
 						restart = true;
 				} catch (InterruptedException | ExecutionException e) {
-					e.printStackTrace();
+					log.log(Logger.Level.ERROR, e.getMessage(), e);
 				}
 
 				stopOutput();

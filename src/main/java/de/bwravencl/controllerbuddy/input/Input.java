@@ -18,6 +18,7 @@
 package de.bwravencl.controllerbuddy.input;
 
 import java.io.IOException;
+import java.lang.System.Logger;
 import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -102,7 +103,7 @@ public class Input {
 			try {
 				hasPolledField.setBoolean(this, false);
 			} catch (final IllegalArgumentException | IllegalAccessException e) {
-				e.printStackTrace();
+				log.log(Logger.Level.ERROR, e.getMessage(), e);
 			}
 
 			return BigInteger.valueOf(pState.gamepad.wButtons).testBit(10) ? 1.0f : 0.0f;
@@ -119,6 +120,8 @@ public class Input {
 	public enum VirtualAxis {
 		X, Y, Z, RX, RY, RZ, S0, S1
 	}
+
+	private static final System.Logger log = System.getLogger(Input.class.getName());
 
 	private static final int LOW_BATTERY_WARNING = 10;
 	private static final float ABORT_SUSPENSION_ACTION_DEADZONE = 0.25f;
@@ -157,7 +160,7 @@ public class Input {
 							cachedComponents = Arrays.copyOf(cachedComponents, cachedComponents.length + 1);
 							cachedComponents[cachedComponents.length - 1] = guideButtonComponent;
 						} catch (final UnsatisfiedLinkError | Exception e) {
-							e.printStackTrace();
+							log.log(Logger.Level.ERROR, e.getMessage(), e);
 						}
 				} else if (isDualShock4Controller(controller)) {
 					final int touchpadButtonIndex = 18;
@@ -372,7 +375,7 @@ public class Input {
 
 					});
 				} catch (final IOException e) {
-					e.printStackTrace();
+					log.log(Logger.Level.ERROR, e.getMessage(), e);
 				}
 		}
 

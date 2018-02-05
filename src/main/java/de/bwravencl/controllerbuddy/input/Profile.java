@@ -18,6 +18,7 @@
 package de.bwravencl.controllerbuddy.input;
 
 import java.awt.Color;
+import java.lang.System.Logger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,8 @@ import de.bwravencl.controllerbuddy.input.action.IModeChangeListenerAction;
 import net.brockmatt.util.ResourceBundleUtil;
 
 public class Profile implements Cloneable {
+
+	private static final System.Logger log = System.getLogger(Profile.class.getName());
 
 	private static final UUID DEFAULT_MODE_UUID = UUID.fromString("067e6162-3b6f-4ae2-a171-2470b63dff00");
 
@@ -68,7 +71,7 @@ public class Profile implements Cloneable {
 				try {
 					buttonToModeActions.add((ButtonToModeAction) a.clone());
 				} catch (final CloneNotSupportedException e1) {
-					e1.printStackTrace();
+					log.log(Logger.Level.ERROR, e1.getMessage(), e1);
 				}
 			clonedComponentToModeActionMap.put(new String(e.getKey()), buttonToModeActions);
 		}
@@ -79,7 +82,7 @@ public class Profile implements Cloneable {
 			try {
 				clonedModes.add((Mode) p.clone());
 			} catch (final CloneNotSupportedException e) {
-				e.printStackTrace();
+				log.log(Logger.Level.ERROR, e.getMessage(), e);
 			}
 		profile.setModes(clonedModes);
 

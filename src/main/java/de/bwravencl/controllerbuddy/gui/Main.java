@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.System.Logger;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -607,6 +608,8 @@ public final class Main {
 
 	}
 
+	private static final System.Logger log = System.getLogger(Main.class.getName());
+
 	private static final int SINGLE_INSTANCE_PORT = 58008;
 	private static final int OUTPUT_TYPE_NONE = 0;
 	private static final int OUTPUT_TYPE_LOCAL = 1;
@@ -699,8 +702,6 @@ public final class Main {
 			} catch (final ParseException e) {
 				final HelpFormatter helpFormatter = new HelpFormatter();
 				helpFormatter.printHelp("ControllerBuddy", options, true);
-			} catch (final Exception e) {
-				e.printStackTrace();
 			}
 		});
 	}
@@ -1129,7 +1130,7 @@ public final class Main {
 			try {
 				SystemTray.getSystemTray().add(trayIcon);
 			} catch (final AWTException e) {
-				e.printStackTrace();
+				log.log(Logger.Level.ERROR, e.getMessage(), e);
 			}
 		}
 
@@ -1350,18 +1351,16 @@ public final class Main {
 			overlayFrame.setUndecorated(true);
 			overlayFrame.setBackground(TRANSPARENT);
 
-			if (isWindows()) {
-				final Icon icon = new ImageIcon(Main.class.getResource(KEYBOARD_ICON_RESOURCE_PATH));
-				final JButton onScreenKeyboardButton = new JButton(icon);
-				onScreenKeyboardButton.addActionListener(e -> {
-					scheduleOnScreenKeyboardModeSwitch = true;
-				});
-				onScreenKeyboardButton.setBorder(null);
-				onScreenKeyboardButton.setFocusPainted(false);
-				onScreenKeyboardButton.setContentAreaFilled(false);
-				onScreenKeyboardButton.setHorizontalAlignment(SwingConstants.RIGHT);
-				overlayFrame.add(onScreenKeyboardButton, BorderLayout.PAGE_START);
-			}
+			final Icon icon = new ImageIcon(Main.class.getResource(KEYBOARD_ICON_RESOURCE_PATH));
+			final JButton onScreenKeyboardButton = new JButton(icon);
+			onScreenKeyboardButton.addActionListener(e -> {
+				scheduleOnScreenKeyboardModeSwitch = true;
+			});
+			onScreenKeyboardButton.setBorder(null);
+			onScreenKeyboardButton.setFocusPainted(false);
+			onScreenKeyboardButton.setContentAreaFilled(false);
+			onScreenKeyboardButton.setHorizontalAlignment(SwingConstants.RIGHT);
+			overlayFrame.add(onScreenKeyboardButton, BorderLayout.PAGE_START);
 
 			overlayFrame.add(labelCurrentMode, BorderLayout.PAGE_END);
 			Main.overlayFrame = overlayFrame;
@@ -1420,12 +1419,12 @@ public final class Main {
 					restartLast();
 				}
 			} catch (final JsonParseException e) {
-				e.printStackTrace();
+				log.log(Logger.Level.ERROR, e.getMessage(), e);
 			}
 
 			return result;
 		} catch (final IOException e) {
-			e.printStackTrace();
+			log.log(Logger.Level.ERROR, e.getMessage(), e);
 		}
 
 		return result;
@@ -1454,7 +1453,7 @@ public final class Main {
 			try {
 				serverSocket.close();
 			} catch (final IOException e) {
-				e.printStackTrace();
+				log.log(Logger.Level.ERROR, e.getMessage(), e);
 			}
 
 		stopAll();
@@ -1507,7 +1506,7 @@ public final class Main {
 			setStatusBarText(rb.getString("STATUS_PROFILE_SAVED") + file.getAbsolutePath());
 			scheduleStatusBarText(rb.getString("STATUS_READY"));
 		} catch (final IOException e) {
-			e.printStackTrace();
+			log.log(Logger.Level.ERROR, e.getMessage(), e);
 		}
 	}
 
@@ -1675,7 +1674,7 @@ public final class Main {
 			try {
 				Thread.sleep(100L);
 			} catch (final InterruptedException e) {
-				e.printStackTrace();
+				log.log(Logger.Level.ERROR, e.getMessage(), e);
 			}
 
 		System.gc();

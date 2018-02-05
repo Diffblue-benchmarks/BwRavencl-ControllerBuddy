@@ -19,6 +19,7 @@ package de.bwravencl.controllerbuddy.output;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.System.Logger;
 import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -39,6 +40,8 @@ public class ServerOutputThread extends OutputThread {
 	private enum ServerState {
 		Listening, Connected
 	}
+
+	private static final System.Logger log = System.getLogger(ServerOutputThread.class.getName());
 
 	public static final int DEFAULT_PORT = 28789;
 	public static final int DEFAULT_TIMEOUT = 2000;
@@ -134,7 +137,7 @@ public class ServerOutputThread extends OutputThread {
 					try {
 						Thread.sleep(pollInterval);
 					} catch (final InterruptedException e) {
-						e.printStackTrace();
+						log.log(Logger.Level.ERROR, e.getMessage(), e);
 					}
 
 					final StringWriter sw = new StringWriter();
@@ -237,7 +240,6 @@ public class ServerOutputThread extends OutputThread {
 					break;
 				}
 		} catch (final BindException e) {
-			e.printStackTrace();
 			SwingUtilities.invokeLater(() -> {
 				JOptionPane.showMessageDialog(main.getFrame(),
 						rb.getString("COULD_NOT_OPEN_SOCKET_DIALOG_TEXT_PREFIX") + port
@@ -245,9 +247,9 @@ public class ServerOutputThread extends OutputThread {
 						rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
 			});
 		} catch (final SocketException e) {
-			e.printStackTrace();
+			log.log(Logger.Level.ERROR, e.getMessage(), e);
 		} catch (final IOException e) {
-			e.printStackTrace();
+			log.log(Logger.Level.ERROR, e.getMessage(), e);
 			SwingUtilities.invokeLater(() -> {
 				JOptionPane.showMessageDialog(main.getFrame(), rb.getString("GENERAL_INPUT_OUTPUT_ERROR_DIALOG_TEXT"),
 						rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);

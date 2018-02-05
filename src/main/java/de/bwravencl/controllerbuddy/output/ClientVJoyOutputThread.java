@@ -19,6 +19,7 @@ package de.bwravencl.controllerbuddy.output;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.System.Logger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -43,6 +44,8 @@ public class ClientVJoyOutputThread extends VJoyOutputThread {
 	private enum ClientState {
 		Connecting, Connected
 	}
+
+	private static final System.Logger log = System.getLogger(ClientVJoyOutputThread.class.getName());
 
 	public static final String DEFAULT_HOST = "127.0.0.1";
 	private static final int N_CONNECTION_RETRIES = 10;
@@ -140,7 +143,7 @@ public class ClientVJoyOutputThread extends VJoyOutputThread {
 										+ rb.getString("STATUS_INVALID_MESSAGE_RETRYING_PART_3"));
 					}
 				} catch (final SocketTimeoutException e) {
-					e.printStackTrace();
+					log.log(Logger.Level.INFO, e.getMessage(), e);
 					retry--;
 					main.setStatusBarText(rb.getString("STATUS_TIMEOUT_RETRYING_PART_1")
 							+ (N_CONNECTION_RETRIES - retry) + rb.getString("STATUS_TIMEOUT_RETRYING_PART_2")
@@ -294,7 +297,7 @@ public class ClientVJoyOutputThread extends VJoyOutputThread {
 					clientSocket.send(sendPacket1);
 				}
 			} catch (final SocketTimeoutException e) {
-				e.printStackTrace();
+				log.log(Logger.Level.INFO, e.getMessage(), e);
 				SwingUtilities.invokeLater(() -> {
 					JOptionPane.showMessageDialog(main.getFrame(), rb.getString("CONNECTION_LOST_DIALOG_TEXT"),
 							rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
@@ -320,7 +323,6 @@ public class ClientVJoyOutputThread extends VJoyOutputThread {
 						writeOutput();
 			}
 		} catch (final UnknownHostException e) {
-			e.printStackTrace();
 			SwingUtilities.invokeLater(() -> {
 				JOptionPane.showMessageDialog(main.getFrame(),
 						rb.getString("INVALID_HOST_ADDRESS_DIALOG_TEXT_PREFIX") + host
@@ -328,7 +330,7 @@ public class ClientVJoyOutputThread extends VJoyOutputThread {
 						rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
 			});
 		} catch (final IOException e) {
-			e.printStackTrace();
+			log.log(Logger.Level.ERROR, e.getMessage(), e);
 			SwingUtilities.invokeLater(() -> {
 				JOptionPane.showMessageDialog(main.getFrame(), rb.getString("GENERAL_INPUT_OUTPUT_ERROR_DIALOG_TEXT"),
 						rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);

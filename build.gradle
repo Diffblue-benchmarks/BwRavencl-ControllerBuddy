@@ -66,10 +66,6 @@ dependencies {
             'net.java.jinput:jinput:2.0.7'
 }
 
-jar {
-    exclude '**/de/bwravencl/controllerbuddy/extras'
-}
-
 natives {
     libraries {
         include = ['jinput-dx8.dll', 'jinput-dx8_64.dll', 'jinput-raw.dll', 'jinput-raw_64.dll', 'jinput-wintab.dll', 'libjinput-linux.so', 'libjinput-linux64.so', 'libjinput-osx.jnilib']

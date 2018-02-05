@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import com.sun.jna.platform.win32.WinDef.BOOL;
 import com.sun.jna.platform.win32.WinDef.LONG;
@@ -117,13 +118,15 @@ public class ClientVJoyOutputThread extends VJoyOutputThread {
 						final String[] messageParts = message.split(ServerOutputThread.PROTOCOL_MESSAGE_DELIMITER);
 						final int serverProtocolVersion = Integer.parseInt(messageParts[1]);
 						if (ServerOutputThread.PROTOCOL_VERSION != serverProtocolVersion) {
-							JOptionPane.showMessageDialog(main.getFrame(),
-									rb.getString("PROTOCOL_VERSION_MISMATCH_DIALOG_TEXT_PART_1")
-											+ ServerOutputThread.PROTOCOL_VERSION
-											+ rb.getString("PROTOCOL_VERSION_MISMATCH_DIALOG_TEXT_PART_2")
-											+ serverProtocolVersion
-											+ rb.getString("PROTOCOL_VERSION_MISMATCH_DIALOG_TEXT_PART_3"),
-									rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
+							SwingUtilities.invokeLater(() -> {
+								JOptionPane.showMessageDialog(main.getFrame(),
+										rb.getString("PROTOCOL_VERSION_MISMATCH_DIALOG_TEXT_PART_1")
+												+ ServerOutputThread.PROTOCOL_VERSION
+												+ rb.getString("PROTOCOL_VERSION_MISMATCH_DIALOG_TEXT_PART_2")
+												+ serverProtocolVersion
+												+ rb.getString("PROTOCOL_VERSION_MISMATCH_DIALOG_TEXT_PART_3"),
+										rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
+							});
 							retry = -1;
 						} else {
 							pollInterval = Long.parseLong(messageParts[2]);
@@ -152,10 +155,12 @@ public class ClientVJoyOutputThread extends VJoyOutputThread {
 						+ pollInterval + rb.getString("STATUS_CONNECTED_TO_PART_4"));
 			} else {
 				if (retry != -1 && run)
-					JOptionPane.showMessageDialog(main.getFrame(),
-							rb.getString("COULD_NOT_CONNECT_DIALOG_TEXT_PREFIX") + N_CONNECTION_RETRIES
-									+ rb.getString("COULD_NOT_CONNECT_DIALOG_TEXT_SUFFIX"),
-							rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
+					SwingUtilities.invokeLater(() -> {
+						JOptionPane.showMessageDialog(main.getFrame(),
+								rb.getString("COULD_NOT_CONNECT_DIALOG_TEXT_PREFIX") + N_CONNECTION_RETRIES
+										+ rb.getString("COULD_NOT_CONNECT_DIALOG_TEXT_SUFFIX"),
+								rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
+					});
 				run = false;
 			}
 
@@ -290,8 +295,10 @@ public class ClientVJoyOutputThread extends VJoyOutputThread {
 				}
 			} catch (final SocketTimeoutException e) {
 				e.printStackTrace();
-				JOptionPane.showMessageDialog(main.getFrame(), rb.getString("CONNECTION_LOST_DIALOG_TEXT"),
-						rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
+				SwingUtilities.invokeLater(() -> {
+					JOptionPane.showMessageDialog(main.getFrame(), rb.getString("CONNECTION_LOST_DIALOG_TEXT"),
+							rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
+				});
 				run = false;
 			}
 			break;
@@ -314,14 +321,18 @@ public class ClientVJoyOutputThread extends VJoyOutputThread {
 			}
 		} catch (final UnknownHostException e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(main.getFrame(),
-					rb.getString("INVALID_HOST_ADDRESS_DIALOG_TEXT_PREFIX") + host
-							+ rb.getString("INVALID_HOST_ADDRESS_DIALOG_TEXT_SUFFIX"),
-					rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
+			SwingUtilities.invokeLater(() -> {
+				JOptionPane.showMessageDialog(main.getFrame(),
+						rb.getString("INVALID_HOST_ADDRESS_DIALOG_TEXT_PREFIX") + host
+								+ rb.getString("INVALID_HOST_ADDRESS_DIALOG_TEXT_SUFFIX"),
+						rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
+			});
 		} catch (final IOException e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(main.getFrame(), rb.getString("GENERAL_INPUT_OUTPUT_ERROR_DIALOG_TEXT"),
-					rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
+			SwingUtilities.invokeLater(() -> {
+				JOptionPane.showMessageDialog(main.getFrame(), rb.getString("GENERAL_INPUT_OUTPUT_ERROR_DIALOG_TEXT"),
+						rb.getString("ERROR_DIALOG_TITLE"), JOptionPane.ERROR_MESSAGE);
+			});
 		} finally {
 			if (clientSocket != null)
 				clientSocket.close();

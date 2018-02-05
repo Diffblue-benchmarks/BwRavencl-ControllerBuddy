@@ -45,9 +45,7 @@ public class ButtonToModeAction implements IButtonToAction {
 
 	public ButtonToModeAction() {
 		final List<Mode> modes = Input.getProfile().getModes();
-
-		if (modes.size() > 1)
-			modeUuid = modes.get(1).getUuid();
+		setMode(modes.size() > 1 ? modes.get(1) : OnScreenKeyboard.onScreenKeyboardMode);
 	}
 
 	private void activateMode(final Input input, final Profile profile) {
@@ -156,8 +154,11 @@ public class ButtonToModeAction implements IButtonToAction {
 
 	public Mode getMode() {
 		for (final Mode m : Input.getProfile().getModes())
-			if (modeUuid.equals(m.getUuid()))
+			if (m.getUuid().equals(modeUuid))
 				return m;
+
+		if (OnScreenKeyboard.onScreenKeyboardMode.getUuid().equals(modeUuid))
+			return OnScreenKeyboard.onScreenKeyboardMode;
 
 		return null;
 	}

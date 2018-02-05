@@ -36,6 +36,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
@@ -135,7 +136,9 @@ public class OnScreenKeyboard extends JFrame {
 								@Override
 								public void run() {
 									if (heldButtons.contains(DefaultKeyboardButton.this)) {
-										DefaultKeyboardButton.this.setForeground(Color.GRAY);
+										SwingUtilities.invokeLater(() -> {
+											DefaultKeyboardButton.this.setForeground(Color.GRAY);
+										});
 										press();
 									}
 								}
@@ -148,7 +151,9 @@ public class OnScreenKeyboard extends JFrame {
 								releaseAllAfterPoll = true;
 
 							} else
-								DefaultKeyboardButton.this.setForeground(KEYBOARD_BUTTON_DEFAULT_FOREGROUND);
+								SwingUtilities.invokeLater(() -> {
+									DefaultKeyboardButton.this.setForeground(KEYBOARD_BUTTON_DEFAULT_FOREGROUND);
+								});
 
 							lockTimerTask.cancel();
 						}
@@ -203,7 +208,9 @@ public class OnScreenKeyboard extends JFrame {
 
 		@Override
 		protected void press() {
-			setBackground(KEYBOARD_BUTTON_HELD_BACKGROUND);
+			SwingUtilities.invokeLater(() -> {
+				setBackground(KEYBOARD_BUTTON_HELD_BACKGROUND);
+			});
 
 			if (heldButtons.add(this))
 				beginPress = System.currentTimeMillis();
@@ -214,7 +221,9 @@ public class OnScreenKeyboard extends JFrame {
 
 		@Override
 		protected void release() {
-			setBackground(KEYBOARD_BUTTON_DEFAULT_BACKGROUND);
+			SwingUtilities.invokeLater(() -> {
+				setBackground(KEYBOARD_BUTTON_DEFAULT_BACKGROUND);
+			});
 			if (heldButtons.remove(this)) {
 				if (System.currentTimeMillis() - beginPress < MIN_REPEAT_PRESS_TIME)
 					doDownUp = true;
@@ -297,7 +306,9 @@ public class OnScreenKeyboard extends JFrame {
 		@Override
 		protected void toggleLock() {
 			locked = !locked;
-			setForeground(locked ? Color.GREEN : KEYBOARD_BUTTON_DEFAULT_FOREGROUND);
+			SwingUtilities.invokeLater(() -> {
+				setForeground(locked ? Color.GREEN : KEYBOARD_BUTTON_DEFAULT_FOREGROUND);
+			});
 			changed = true;
 			anyChanges = true;
 		}
@@ -447,38 +458,56 @@ public class OnScreenKeyboard extends JFrame {
 		keyboardButtons[selectedRow][selectedColumn].setBorder(focusedButtonBorder);
 	}
 
+	private int getCurrentButtonX() {
+		int x = keyboardButtons[selectedRow][selectedColumn].getPreferredSize().width / 2;
+		for (int i = 0; i < selectedColumn; i++)
+			x += keyboardButtons[selectedRow][i].getPreferredSize().width;
+
+		return x;
+	}
+
 	public void moveSelectorDown() {
-		if (selectedRow < keyboardButtons.length - 1) {
-			unfocusCurrentButton();
-			selectedRow++;
-			selectedColumn = Math.min(selectedColumn, keyboardButtons[selectedRow].length - 1);
-			focusCurrentButton();
-		}
+		SwingUtilities.invokeLater(() -> {
+			if (selectedRow < keyboardButtons.length - 1) {
+				unfocusCurrentButton();
+
+				final int x = getCurrentButtonX();
+				selectedRow++;
+				selectButtonByX(x);
+			}
+		});
 	}
 
 	public void moveSelectorLeft() {
-		if (selectedColumn > 0) {
-			unfocusCurrentButton();
-			selectedColumn--;
-			focusCurrentButton();
-		}
+		SwingUtilities.invokeLater(() -> {
+			if (selectedColumn > 0) {
+				unfocusCurrentButton();
+				selectedColumn--;
+				focusCurrentButton();
+			}
+		});
 	}
 
 	public void moveSelectorRight() {
-		if (selectedColumn < keyboardButtons[selectedRow].length - 1) {
-			unfocusCurrentButton();
-			selectedColumn++;
-			focusCurrentButton();
-		}
+		SwingUtilities.invokeLater(() -> {
+			if (selectedColumn < keyboardButtons[selectedRow].length - 1) {
+				unfocusCurrentButton();
+				selectedColumn++;
+				focusCurrentButton();
+			}
+		});
 	}
 
 	public void moveSelectorUp() {
-		if (selectedRow > 0) {
-			unfocusCurrentButton();
-			selectedRow--;
-			selectedColumn = Math.min(selectedColumn, keyboardButtons[selectedRow].length - 1);
-			focusCurrentButton();
-		}
+		SwingUtilities.invokeLater(() -> {
+			if (selectedRow > 0) {
+				unfocusCurrentButton();
+
+				final int x = getCurrentButtonX();
+				selectedRow--;
+				selectButtonByX(x);
+			}
+		});
 	}
 
 	public void poll(final Input input) {
@@ -511,6 +540,26 @@ public class OnScreenKeyboard extends JFrame {
 		releaseAllAfterPoll = true;
 	}
 
+	private void selectButtonByX(final int targetX) {
+		int x = 0;
+		int minDelta = Integer.MAX_VALUE;
+		for (int i = 0; i < keyboardButtons[selectedRow].length; i++) {
+			final int width = keyboardButtons[selectedRow][i].getPreferredSize().width;
+			final int delta = Math.abs(targetX - (x + width / 2));
+
+			if (delta > minDelta)
+				break;
+			else {
+				selectedColumn = Math.min(i, keyboardButtons[selectedRow].length - 1);
+				minDelta = delta;
+			}
+
+			x += width;
+		}
+
+		focusCurrentButton();
+	}
+
 	@Override
 	public void setVisible(final boolean b) {
 		super.setVisible(b);
@@ -526,9 +575,7 @@ public class OnScreenKeyboard extends JFrame {
 	}
 
 	private void unfocusCurrentButton() {
-		final AbstractKeyboardButton keyBoardButton = keyboardButtons[selectedRow][selectedColumn];
-
-		keyBoardButton.setBorder(defaultButtonBorder);
+		keyboardButtons[selectedRow][selectedColumn].setBorder(defaultButtonBorder);
 	}
 
 	protected void updateLocation() {

@@ -115,9 +115,9 @@ public class OnScreenKeyboard extends JFrame {
 					|| DirectInputKeyCode.DIK_LWIN.equals(directInputKeyCodeName)
 					|| DirectInputKeyCode.DIK_RWIN.equals(directInputKeyCodeName)) {
 				keyCodes = new Integer[0];
-				modifierCodes = new Integer[] { DirectInputKeyCode.nameToScanCodeMap.get(directInputKeyCodeName) };
+				modifierCodes = new Integer[] { DirectInputKeyCode.nameToKeyCodeMap.get(directInputKeyCodeName) };
 			} else {
-				keyCodes = new Integer[] { DirectInputKeyCode.nameToScanCodeMap.get(directInputKeyCodeName) };
+				keyCodes = new Integer[] { DirectInputKeyCode.nameToKeyCodeMap.get(directInputKeyCodeName) };
 				modifierCodes = new Integer[0];
 			}
 

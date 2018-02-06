@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.prefs.Preferences;
@@ -120,7 +121,7 @@ import de.bwravencl.controllerbuddy.input.Mode;
 import de.bwravencl.controllerbuddy.input.Profile;
 import de.bwravencl.controllerbuddy.input.action.ButtonToModeAction;
 import de.bwravencl.controllerbuddy.input.action.IAction;
-import de.bwravencl.controllerbuddy.json.InterfaceAdapter;
+import de.bwravencl.controllerbuddy.json.ActionAdapter;
 import de.bwravencl.controllerbuddy.output.ClientVJoyOutputThread;
 import de.bwravencl.controllerbuddy.output.LocalVJoyOutputThread;
 import de.bwravencl.controllerbuddy.output.OutputThread;
@@ -1402,10 +1403,17 @@ public final class Main {
 
 		try {
 			final String jsonString = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
-			final Gson gson = new GsonBuilder().registerTypeAdapter(IAction.class, new InterfaceAdapter<>()).create();
+			final ActionAdapter actionAdapter = new ActionAdapter();
+			final Gson gson = new GsonBuilder().registerTypeAdapter(IAction.class, actionAdapter).create();
 
 			try {
 				final Profile profile = gson.fromJson(jsonString, Profile.class);
+
+				final Set<String> unknownActionClasses = actionAdapter.getUnknownActionClasses();
+				if (!unknownActionClasses.isEmpty())
+					JOptionPane.showMessageDialog(frame,
+							rb.getString("UNKNOWN_ACTION_TYPES_DIALOG_TEXT") + String.join("\n", unknownActionClasses),
+							rb.getString("WARNING_DIALOG_TITLE"), JOptionPane.WARNING_MESSAGE);
 
 				result = input.setProfile(profile, input.getController());
 				if (result) {
@@ -1491,8 +1499,8 @@ public final class Main {
 		if (!file.getName().toLowerCase(Locale.getDefault()).endsWith(profileFileSuffix))
 			file = new File(file.getAbsoluteFile() + profileFileSuffix);
 
-		final Gson gson = new GsonBuilder().registerTypeAdapter(IAction.class, new InterfaceAdapter<>())
-				.setPrettyPrinting().create();
+		final Gson gson = new GsonBuilder().registerTypeAdapter(IAction.class, new ActionAdapter()).setPrettyPrinting()
+				.create();
 		final String jsonString = gson.toJson(input.getProfile());
 
 		try (FileOutputStream fos = new FileOutputStream(file)) {

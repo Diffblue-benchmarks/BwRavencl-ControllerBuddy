@@ -108,7 +108,7 @@ public class EditActionsDialog extends JDialog {
 		@Override
 		public void actionPerformed(final ActionEvent e) {
 			try {
-				final IAction action = (IAction) selectedAvailableAction.clazz.getConstructor().newInstance();
+				final IAction action = getActionClassInstance(selectedAvailableAction.clazz);
 
 				if (action instanceof ButtonToModeAction) {
 					if (unsavedProfile.getComponentToModeActionMap().get(component.getName()) == null)
@@ -140,7 +140,7 @@ public class EditActionsDialog extends JDialog {
 
 	}
 
-	private static class AvailableAction {
+	private class AvailableAction {
 
 		private final Class<?> clazz;
 
@@ -153,7 +153,8 @@ public class EditActionsDialog extends JDialog {
 			String description = "";
 
 			try {
-				description = clazz.getConstructor().newInstance().toString();
+				final IAction action = getActionClassInstance(clazz);
+				description = action.toString();
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException | NoSuchMethodException | SecurityException e) {
 				log.log(Logger.Level.ERROR, e.getMessage(), e);
@@ -375,6 +376,7 @@ public class EditActionsDialog extends JDialog {
 	private static final Class<?>[] AXIS_ACTION_CLASSES = { AxisToAxisAction.class, AxisToButtonAction.class,
 			AxisToCursorAction.class, AxisToKeyAction.class, AxisToMouseButtonAction.class,
 			AxisToRelativeAxisAction.class, AxisToScrollAction.class, NullAction.class };
+
 	private static final Class<?>[] BUTTON_ACTION_CLASSES = { ButtonToButtonAction.class, ButtonToCycleAction.class,
 			ButtonToKeyAction.class, ButtonToLockKeyAction.class, ButtonToModeAction.class,
 			ButtonToMouseButtonAction.class, ButtonToRelativeAxisReset.class, ButtonToScrollAction.class,
@@ -384,8 +386,8 @@ public class EditActionsDialog extends JDialog {
 			NullAction.class };
 	private static final Class<?>[] ON_SCREEN_KEYBOARD_ACTION_CLASSES = { ButtonToPressOnScreenKeyboardKeyAction.class,
 			ButtonToSelectOnScreenKeyboardKeyAction.class };
-
 	private static final String ACTION_PROPERTY_GETTER_PREFIX_DEFAULT = "get";
+
 	private static final String ACTION_PROPERTY_GETTER_PREFIX_BOOLEAN = "is";
 	private static final String ACTION_PROPERTY_SETTER_PREFIX = "set";
 	private static final int DIALOG_BOUNDS_X = Main.DIALOG_BOUNDS_X + Main.DIALOG_BOUNDS_X_Y_OFFSET;
@@ -408,6 +410,7 @@ public class EditActionsDialog extends JDialog {
 	}
 
 	private Main main;
+
 	private Component component;
 	private Input input;
 	private Profile unsavedProfile;
@@ -480,9 +483,21 @@ public class EditActionsDialog extends JDialog {
 		}
 	}
 
-	void closeDialog() {
+	private void closeDialog() {
 		setVisible(false);
 		dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+	}
+
+	private IAction getActionClassInstance(final Class<?> clazz) throws InstantiationException, IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+		if (!IAction.class.isAssignableFrom(clazz))
+			throw new IllegalArgumentException(
+					"Class '" + clazz.getName() + "' does not implement '" + IAction.class.getSimpleName() + "'");
+
+		if (clazz == ButtonToModeAction.class)
+			return new ButtonToModeAction(input);
+		else
+			return (IAction) clazz.getConstructor().newInstance();
 	}
 
 	private IAction[] getAssignedActions() {
@@ -609,7 +624,7 @@ public class EditActionsDialog extends JDialog {
 							propertyNameLabel.setPreferredSize(new Dimension(100, 15));
 							propertyPanel.add(propertyNameLabel);
 
-							if (Boolean.class == clazz) {
+							if (clazz == Boolean.class) {
 								final JCheckBox checkBox = new JCheckBox(new JCheckBoxSetPropertyAction(m));
 								if (!isComponentEditor() && "LongPress".equals(propertyName)) {
 									m.invoke(selectedAssignedAction, false);
@@ -622,7 +637,7 @@ public class EditActionsDialog extends JDialog {
 								} else
 									checkBox.setSelected((boolean) getterMethod.invoke(selectedAssignedAction));
 								propertyPanel.add(checkBox);
-							} else if (Integer.class == clazz) {
+							} else if (clazz == Integer.class) {
 								final int value = (int) getterMethod.invoke(selectedAssignedAction);
 
 								final SpinnerNumberModel model;
@@ -641,7 +656,7 @@ public class EditActionsDialog extends JDialog {
 								formatter1.setCommitsOnValidEdit(true);
 								spinner.addChangeListener(new JSpinnerSetPropertyChangeListener(m));
 								propertyPanel.add(spinner);
-							} else if (Float.class == clazz) {
+							} else if (clazz == Float.class) {
 								final float value = (float) getterMethod.invoke(selectedAssignedAction);
 
 								final SpinnerNumberModel model;
@@ -674,7 +689,7 @@ public class EditActionsDialog extends JDialog {
 									spinner.setValue(parentActivationValue);
 									spinner.setEnabled(false);
 								}
-							} else if (Mode.class == clazz) {
+							} else if (clazz == Mode.class) {
 								final JComboBox<Mode> comboBox = new JComboBox<>();
 								if (!input.getProfile().getModes().contains(OnScreenKeyboard.onScreenKeyboardMode))
 									comboBox.addItem(OnScreenKeyboard.onScreenKeyboardMode);
@@ -689,22 +704,22 @@ public class EditActionsDialog extends JDialog {
 								comboBox.setAction(new JComboBoxSetPropertyAction(m));
 								comboBox.setSelectedItem(getterMethod.invoke(selectedAssignedAction));
 								propertyPanel.add(comboBox);
-							} else if (MouseAxis.class == clazz) {
+							} else if (clazz == MouseAxis.class) {
 								final JComboBox<MouseAxis> comboBox = new JComboBox<>(MouseAxis.values());
 								comboBox.setAction(new JComboBoxSetPropertyAction(m));
 								comboBox.setSelectedItem(getterMethod.invoke(selectedAssignedAction));
 								propertyPanel.add(comboBox);
-							} else if (Direction.class == clazz) {
+							} else if (clazz == Direction.class) {
 								final JComboBox<Direction> comboBox = new JComboBox<>(Direction.values());
 								comboBox.setAction(new JComboBoxSetPropertyAction(m));
 								comboBox.setSelectedItem(getterMethod.invoke(selectedAssignedAction));
 								propertyPanel.add(comboBox);
-							} else if (LockKey.class == clazz) {
+							} else if (clazz == LockKey.class) {
 								final JComboBox<LockKey> comboBox = new JComboBox<>(LockKey.LOCK_KEYS);
 								comboBox.setAction(new JComboBoxSetPropertyAction(m));
 								comboBox.setSelectedItem(getterMethod.invoke(selectedAssignedAction));
 								propertyPanel.add(comboBox);
-							} else if (KeyStroke.class == clazz) {
+							} else if (clazz == KeyStroke.class) {
 								final KeyStroke keyStroke = (KeyStroke) getterMethod.invoke(selectedAssignedAction);
 								final Set<String> availableScanCodes = DirectInputKeyCode.nameToKeyCodeMap.keySet();
 
@@ -755,7 +770,7 @@ public class EditActionsDialog extends JDialog {
 								keysPanel.add(keysScrollPane);
 								propertyPanel.add(keysPanel);
 
-							} else if (List.class == clazz) {
+							} else if (clazz == List.class) {
 								final JButton editActionsButton = new JButton(new EditActionsAction());
 								editActionsButton.setPreferredSize(Main.BUTTON_DIMENSION);
 								propertyPanel.add(editActionsButton);

@@ -43,8 +43,8 @@ public class ButtonToModeAction implements IButtonToAction {
 	private float activationValue = DEFAULT_ACTIVATION_VALUE;
 	private UUID modeUuid;
 
-	public ButtonToModeAction() {
-		final List<Mode> modes = Input.getProfile().getModes();
+	public ButtonToModeAction(final Input input) {
+		final List<Mode> modes = input.getProfile().getModes();
 		setMode(modes.size() > 1 ? modes.get(1) : OnScreenKeyboard.onScreenKeyboardMode);
 	}
 
@@ -64,7 +64,7 @@ public class ButtonToModeAction implements IButtonToAction {
 	}
 
 	private boolean componentNotUsedByActiveModes(final Input input) {
-		final Profile profile = Input.getProfile();
+		final Profile profile = input.getProfile();
 
 		Component component = null;
 		componentLoop: for (final Component c : Input.getComponents(input.getController())) {
@@ -79,7 +79,7 @@ public class ButtonToModeAction implements IButtonToAction {
 
 		if (component != null)
 			for (final ButtonToModeAction a : buttonToModeActionStack) {
-				final Map<String, List<IAction>> componentToActionMap = a.getMode().getComponentToActionsMap();
+				final Map<String, List<IAction>> componentToActionMap = a.getMode(input).getComponentToActionsMap();
 				final List<IAction> actions = componentToActionMap.get(component.getName());
 
 				if (actions != null)
@@ -98,7 +98,7 @@ public class ButtonToModeAction implements IButtonToAction {
 			if (!buttonToModeActionStack.isEmpty()) {
 				buttonToModeActionStack.pop();
 				if (!buttonToModeActionStack.isEmpty())
-					previousMode = buttonToModeActionStack.peek().getMode();
+					previousMode = buttonToModeActionStack.peek().getMode(input);
 			}
 
 			final Map<String, List<IAction>> componentToActionsMap = profile.getActiveMode().getComponentToActionsMap();
@@ -126,10 +126,10 @@ public class ButtonToModeAction implements IButtonToAction {
 
 	@Override
 	public void doAction(final Input input, float value) {
-		value = handleLongPress(value);
-		final Profile profile = Input.getProfile();
+		value = handleLongPress(input, value);
+		final Profile profile = input.getProfile();
 
-		if (value != activationValue) {
+		if (!IButtonToAction.floatEquals(value, activationValue)) {
 			if (toggle)
 				up = true;
 			else
@@ -152,8 +152,8 @@ public class ButtonToModeAction implements IButtonToAction {
 		return activationValue;
 	}
 
-	public Mode getMode() {
-		for (final Mode m : Input.getProfile().getModes())
+	public Mode getMode(final Input input) {
+		for (final Mode m : input.getProfile().getModes())
 			if (m.getUuid().equals(modeUuid))
 				return m;
 

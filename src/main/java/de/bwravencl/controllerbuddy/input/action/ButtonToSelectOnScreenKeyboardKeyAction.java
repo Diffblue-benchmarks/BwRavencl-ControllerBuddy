@@ -26,9 +26,9 @@ public class ButtonToSelectOnScreenKeyboardKeyAction implements IButtonToAction 
 
 	@Override
 	public void doAction(final Input input, float value) {
-		value = handleLongPress(value);
+		value = handleLongPress(input, value);
 
-		if (value == activationValue) {
+		if (IButtonToAction.floatEquals(value, activationValue)) {
 			final long currentTime = System.currentTimeMillis();
 			if (currentTime - lastPressTime >= MIN_ELAPSE_TIME) {
 				final OnScreenKeyboard onScreenKeyboard = input.getMain().getOnScreenKeyboard();

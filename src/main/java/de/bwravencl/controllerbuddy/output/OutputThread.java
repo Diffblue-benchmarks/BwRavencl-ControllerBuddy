@@ -64,8 +64,6 @@ public abstract class OutputThread extends Thread {
 			log.log(Logger.Level.ERROR, e.getMessage(), e);
 		}
 
-		input.getController();
-
 		for (final Controller c : Input.getControllers())
 			if (c.poll()) {
 				main.setSelectedController(c);

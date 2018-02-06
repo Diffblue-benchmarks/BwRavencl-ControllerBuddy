@@ -62,7 +62,7 @@ public class Profile implements Cloneable {
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		final Profile profile = new Profile();
+		final Profile profile = (Profile) super.clone();
 
 		final Map<String, List<ButtonToModeAction>> clonedComponentToModeActionMap = new HashMap<>();
 		for (final Map.Entry<String, List<ButtonToModeAction>> e : componentToModeActionMap.entrySet()) {
@@ -73,7 +73,7 @@ public class Profile implements Cloneable {
 				} catch (final CloneNotSupportedException e1) {
 					log.log(Logger.Level.ERROR, e1.getMessage(), e1);
 				}
-			clonedComponentToModeActionMap.put(new String(e.getKey()), buttonToModeActions);
+			clonedComponentToModeActionMap.put(e.getKey(), buttonToModeActions);
 		}
 		profile.setComponentToModeActionMap(clonedComponentToModeActionMap);
 
@@ -113,12 +113,12 @@ public class Profile implements Cloneable {
 		return virtualAxisToColorMap;
 	}
 
-	public void removeMode(final Mode mode) {
+	public void removeMode(final Input input, final Mode mode) {
 		final List<String> actionsToRemove = new ArrayList<>();
 
 		for (final Map.Entry<String, List<ButtonToModeAction>> e : componentToModeActionMap.entrySet())
 			for (final ButtonToModeAction a : e.getValue())
-				if (a.getMode().equals(mode))
+				if (a.getMode(input).equals(mode))
 					actionsToRemove.add(e.getKey());
 
 		for (final String s : actionsToRemove)

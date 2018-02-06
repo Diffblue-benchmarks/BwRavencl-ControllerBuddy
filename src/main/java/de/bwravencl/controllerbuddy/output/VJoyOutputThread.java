@@ -351,7 +351,7 @@ public abstract class VJoyOutputThread extends OutputThread {
 
 			final int nButtons = vJoy.GetVJDButtonNumber(vJoyDevice);
 			int maxButtonId = -1;
-			for (final Mode m : Input.getProfile().getModes())
+			for (final Mode m : input.getProfile().getModes())
 				for (final List<IAction> actions : m.getComponentToActionsMap().values())
 					for (final IAction a : actions)
 						if (a instanceof ToButtonAction) {

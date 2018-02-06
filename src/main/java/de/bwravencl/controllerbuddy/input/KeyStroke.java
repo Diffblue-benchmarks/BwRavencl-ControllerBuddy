@@ -33,16 +33,16 @@ public class KeyStroke implements Cloneable {
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		final KeyStroke keyStroke = new KeyStroke();
+		final KeyStroke keyStroke = (KeyStroke) super.clone();
 
 		final Integer[] clonedKeyCodes = new Integer[keyCodes.length];
 		for (int i = 0; i < keyCodes.length; i++)
-			clonedKeyCodes[i] = Integer.valueOf(keyCodes[i]);
+			clonedKeyCodes[i] = keyCodes[i];
 		keyStroke.setKeyCodes(clonedKeyCodes);
 
 		final Integer[] clonedModifierCodes = new Integer[modifierCodes.length];
 		for (int i = 0; i < modifierCodes.length; i++)
-			clonedModifierCodes[i] = Integer.valueOf(modifierCodes[i]);
+			clonedModifierCodes[i] = modifierCodes[i];
 		keyStroke.setModifierCodes(clonedModifierCodes);
 
 		return keyStroke;

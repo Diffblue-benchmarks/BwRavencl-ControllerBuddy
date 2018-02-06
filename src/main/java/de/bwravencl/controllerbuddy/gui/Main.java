@@ -146,7 +146,7 @@ public final class Main {
 		@Override
 		public void actionPerformed(final ActionEvent e) {
 			final Mode mode = new Mode();
-			Input.getProfile().getModes().add(mode);
+			input.getProfile().getModes().add(mode);
 
 			setUnsavedChanges(true);
 			updateModesPanel();
@@ -203,9 +203,9 @@ public final class Main {
 		@Override
 		public void actionPerformed(final ActionEvent e) {
 			if (((JCheckBox) e.getSource()).isSelected())
-				Input.getProfile().getVirtualAxisToColorMap().put(virtualAxis, new Color(0, 0, 0, 128));
+				input.getProfile().getVirtualAxisToColorMap().put(virtualAxis, new Color(0, 0, 0, 128));
 			else
-				Input.getProfile().getVirtualAxisToColorMap().remove(virtualAxis);
+				input.getProfile().getVirtualAxisToColorMap().remove(virtualAxis);
 
 			setUnsavedChanges(true);
 			updateOverlayPanel();
@@ -273,6 +273,39 @@ public final class Main {
 
 	}
 
+	private static final class ProfileFileChooser extends JFileChooser {
+
+		private static final long serialVersionUID = -4669170626378955605L;
+
+		public ProfileFileChooser() {
+			setFileFilter(new FileNameExtensionFilter(rb.getString("PROFILE_FILE_DESCRIPTION"),
+					rb.getString("PROFILE_FILE_EXTENSION")));
+			setSelectedFile(new File(rb.getString("PROFILE_FILE_SUFFIX")));
+		}
+
+		@Override
+		public void approveSelection() {
+			final File file = getSelectedFile();
+			if (file.exists() && getDialogType() == SAVE_DIALOG) {
+				final int result = JOptionPane.showConfirmDialog(this,
+						file.getName() + rb.getString("FILE_EXISTS_DIALOG_TEXT"),
+						rb.getString("FILE_EXISTS_DIALOG_TITLE"), JOptionPane.YES_NO_CANCEL_OPTION);
+				switch (result) {
+				case JOptionPane.NO_OPTION:
+					return;
+				case JOptionPane.CLOSED_OPTION:
+					return;
+				case JOptionPane.CANCEL_OPTION:
+					cancelSelection();
+					return;
+				default:
+					break;
+				}
+			}
+			super.approveSelection();
+		}
+	}
+
 	private class QuitAction extends AbstractAction {
 
 		private static final long serialVersionUID = 8952460723177800923L;
@@ -305,7 +338,7 @@ public final class Main {
 
 		@Override
 		public void actionPerformed(final ActionEvent e) {
-			Input.getProfile().removeMode(mode);
+			input.getProfile().removeMode(input, mode);
 			setUnsavedChanges(true);
 			updateModesPanel();
 		}
@@ -385,9 +418,9 @@ public final class Main {
 		@Override
 		public void actionPerformed(final ActionEvent e) {
 			final Color newColor = JColorChooser.showDialog(frame, "Choose Background Color",
-					Input.getProfile().getVirtualAxisToColorMap().get(virtualAxis));
+					input.getProfile().getVirtualAxisToColorMap().get(virtualAxis));
 			if (newColor != null)
-				Input.getProfile().getVirtualAxisToColorMap().replace(virtualAxis, newColor);
+				input.getProfile().getVirtualAxisToColorMap().replace(virtualAxis, newColor);
 
 			setUnsavedChanges(true);
 			updateOverlayPanel();
@@ -763,33 +796,7 @@ public final class Main {
 	private ServerSocket serverSocket;
 	private volatile boolean scheduleOnScreenKeyboardModeSwitch;
 	private final JLabel labelCurrentMode = new JLabel();
-
-	private final JFileChooser fileChooser = new JFileChooser() {
-
-		private static final long serialVersionUID = -4669170626378955605L;
-
-		@Override
-		public void approveSelection() {
-			final File file = getSelectedFile();
-			if (file.exists() && getDialogType() == SAVE_DIALOG) {
-				final int result = JOptionPane.showConfirmDialog(this,
-						file.getName() + rb.getString("FILE_EXISTS_DIALOG_TEXT"),
-						rb.getString("FILE_EXISTS_DIALOG_TITLE"), JOptionPane.YES_NO_CANCEL_OPTION);
-				switch (result) {
-				case JOptionPane.NO_OPTION:
-					return;
-				case JOptionPane.CLOSED_OPTION:
-					return;
-				case JOptionPane.CANCEL_OPTION:
-					cancelSelection();
-					return;
-				default:
-					break;
-				}
-			}
-			super.approveSelection();
-		}
-	};
+	private final JFileChooser fileChooser = new ProfileFileChooser();
 
 	public Main() {
 		frame = new JFrame();
@@ -1144,11 +1151,6 @@ public final class Main {
 		statusLabel.setBorder(BorderFactory.createCompoundBorder(outsideBorder, insideBorder));
 		frame.add(statusLabel, BorderLayout.SOUTH);
 
-		final FileNameExtensionFilter filter = new FileNameExtensionFilter(rb.getString("PROFILE_FILE_DESCRIPTION"),
-				rb.getString("PROFILE_FILE_EXTENSION"));
-		fileChooser.setFileFilter(filter);
-		fileChooser.setSelectedFile(new File(rb.getString("PROFILE_FILE_SUFFIX")));
-
 		final String lastControllerName = preferences.get(PREFERENCES_LAST_CONTROLLER, null);
 
 		for (final Controller c : ControllerEnvironment.getDefaultEnvironment().getControllers())
@@ -1316,10 +1318,10 @@ public final class Main {
 
 	public void handleOnScreenKeyboardModeChange() {
 		if (scheduleOnScreenKeyboardModeSwitch) {
-			for (final List<ButtonToModeAction> buttonToModeActions : Input.getProfile().getComponentToModeActionMap()
+			for (final List<ButtonToModeAction> buttonToModeActions : input.getProfile().getComponentToModeActionMap()
 					.values())
 				for (final ButtonToModeAction buttonToModeAction : buttonToModeActions)
-					if (OnScreenKeyboard.onScreenKeyboardMode.equals(buttonToModeAction.getMode())) {
+					if (OnScreenKeyboard.onScreenKeyboardMode.equals(buttonToModeAction.getMode(input))) {
 						buttonToModeAction.doAction(input, buttonToModeAction.getActivationValue());
 						break;
 					}
@@ -1330,7 +1332,7 @@ public final class Main {
 
 	private void initOverlay() {
 		String longestDescription = "";
-		for (final Mode m : Input.getProfile().getModes()) {
+		for (final Mode m : input.getProfile().getModes()) {
 			final String description = m.getDescription();
 			if (description.length() > longestDescription.length())
 				longestDescription = description;
@@ -1341,7 +1343,7 @@ public final class Main {
 				.setPreferredSize(new Dimension(fontMetrics.stringWidth(longestDescription), fontMetrics.getHeight()));
 		labelCurrentMode.setForeground(Color.RED);
 		labelCurrentMode.setHorizontalAlignment(SwingConstants.RIGHT);
-		labelCurrentMode.setText(Input.getProfile().getActiveMode().getDescription());
+		labelCurrentMode.setText(input.getProfile().getActiveMode().getDescription());
 
 		if (overlayFrame == null) {
 			final JFrame overlayFrame = new JFrame();
@@ -1371,7 +1373,7 @@ public final class Main {
 		indicatorPanel.setBackground(TRANSPARENT);
 
 		for (final VirtualAxis va : Input.VirtualAxis.values()) {
-			final Map<VirtualAxis, Color> virtualAxisToColorMap = Input.getProfile().getVirtualAxisToColorMap();
+			final Map<VirtualAxis, Color> virtualAxisToColorMap = input.getProfile().getVirtualAxisToColorMap();
 
 			if (virtualAxisToColorMap.containsKey(va)) {
 				final JProgressBar progressBar = new JProgressBar(SwingConstants.VERTICAL);
@@ -1405,7 +1407,7 @@ public final class Main {
 			try {
 				final Profile profile = gson.fromJson(jsonString, Profile.class);
 
-				result = Input.setProfile(profile, input.getController());
+				result = input.setProfile(profile, input.getController());
 				if (result) {
 					saveLastProfile(file);
 					updateModesPanel();
@@ -1486,19 +1488,23 @@ public final class Main {
 		input.reset();
 
 		final String profileFileSuffix = rb.getString("PROFILE_FILE_SUFFIX");
-		if (!file.getName().toLowerCase().endsWith(profileFileSuffix))
+		if (!file.getName().toLowerCase(Locale.getDefault()).endsWith(profileFileSuffix))
 			file = new File(file.getAbsoluteFile() + profileFileSuffix);
 
 		final Gson gson = new GsonBuilder().registerTypeAdapter(IAction.class, new InterfaceAdapter<>())
 				.setPrettyPrinting().create();
-		final String jsonString = gson.toJson(Input.getProfile());
+		final String jsonString = gson.toJson(input.getProfile());
 
 		try (FileOutputStream fos = new FileOutputStream(file)) {
 			final Writer writer = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8));
-			writer.write(jsonString);
-			writer.flush();
-			fos.flush();
-			fos.close();
+			try {
+				writer.write(jsonString);
+				writer.flush();
+				fos.flush();
+				fos.close();
+			} finally {
+				writer.close();
+			}
 
 			saveLastProfile(file);
 			loadedProfile = file.getName();
@@ -1785,7 +1791,7 @@ public final class Main {
 		SwingUtilities.invokeLater(() -> {
 			modesListPanel.removeAll();
 
-			final List<Mode> modes = Input.getProfile().getModes();
+			final List<Mode> modes = input.getProfile().getModes();
 			for (final Mode m : modes) {
 				final JPanel modePanel = new JPanel(new GridBagLayout());
 				modesListPanel.add(modePanel,
@@ -1872,12 +1878,12 @@ public final class Main {
 				indicatorPanel.add(virtualAxisLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
 						GridBagConstraints.BASELINE, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
-				final boolean enabled = Input.getProfile().getVirtualAxisToColorMap().containsKey(va);
+				final boolean enabled = input.getProfile().getVirtualAxisToColorMap().containsKey(va);
 
 				final JLabel colorLabel = new JLabel();
 				if (enabled) {
 					colorLabel.setOpaque(true);
-					colorLabel.setBackground(Input.getProfile().getVirtualAxisToColorMap().get(va));
+					colorLabel.setBackground(input.getProfile().getVirtualAxisToColorMap().get(va));
 				} else
 					colorLabel.setText(rb.getString("INDICATOR_DISABLED_LABEL"));
 				colorLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -1923,7 +1929,7 @@ public final class Main {
 			frame.setTitle(sb.toString());
 
 			if (trayIcon != null && input != null) {
-				if (input != null && Main.isWindows() && Input.isDualShock4Controller(input.getController()))
+				if (Main.isWindows() && Input.isDualShock4Controller(input.getController()))
 					sb.append(rb.getString("BATTERY_TOOLTIP_PREFIX") + input.getBatteryState()
 							+ (input.isCharging() ? rb.getString("BATTERY_TOOLTIP_CHARGING_SUFFIX")
 									: rb.getString("BATTERY_TOOLTIP_DISCHARGING_SUFFIX")));

@@ -49,13 +49,14 @@ public class Mode implements Cloneable {
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		final Mode mode = new Mode(uuid);
-		mode.setDescription(new String(description));
+		final Mode mode = (Mode) super.clone();
+		mode.setUuid(uuid);
+		mode.setDescription(description);
 
 		final Map<String, List<IAction>> clonedComponentToActionMap = new HashMap<>();
 		for (final Map.Entry<String, List<IAction>> e : componentToActionsMap.entrySet())
 			for (final IAction a : e.getValue()) {
-				final String key = new String(e.getKey());
+				final String key = e.getKey();
 
 				List<IAction> actions = clonedComponentToActionMap.get(key);
 				if (actions == null) {

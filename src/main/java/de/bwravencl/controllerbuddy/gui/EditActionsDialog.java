@@ -93,6 +93,7 @@ import de.bwravencl.controllerbuddy.input.action.NullAction;
 import net.brockmatt.util.ResourceBundleUtil;
 import net.java.games.input.Component;
 
+@SuppressWarnings("serial")
 public class EditActionsDialog extends JDialog {
 
 	private class AddActionAction extends AbstractAction {
@@ -327,7 +328,7 @@ public class EditActionsDialog extends JDialog {
 						&& unsavedProfile.getModes().contains(OnScreenKeyboard.onScreenKeyboardMode))
 					unsavedProfile.getModes().remove(OnScreenKeyboard.onScreenKeyboardMode);
 
-				Input.setProfile(unsavedProfile, input.getController());
+				input.setProfile(unsavedProfile, input.getController());
 				main.updateModesPanel();
 				main.setUnsavedChanges(true);
 			} else
@@ -368,8 +369,6 @@ public class EditActionsDialog extends JDialog {
 		}
 
 	}
-
-	private static final long serialVersionUID = 8876286334367723566L;
 
 	private static final System.Logger log = System.getLogger(EditActionsDialog.class.getName());
 
@@ -447,7 +446,7 @@ public class EditActionsDialog extends JDialog {
 		this.component = component;
 
 		try {
-			unsavedProfile = (Profile) Input.getProfile().clone();
+			unsavedProfile = (Profile) input.getProfile().clone();
 
 			preInit();
 
@@ -677,9 +676,9 @@ public class EditActionsDialog extends JDialog {
 								}
 							} else if (Mode.class == clazz) {
 								final JComboBox<Mode> comboBox = new JComboBox<>();
-								if (!Input.getProfile().getModes().contains(OnScreenKeyboard.onScreenKeyboardMode))
+								if (!input.getProfile().getModes().contains(OnScreenKeyboard.onScreenKeyboardMode))
 									comboBox.addItem(OnScreenKeyboard.onScreenKeyboardMode);
-								for (final Mode p : Input.getProfile().getModes())
+								for (final Mode p : input.getProfile().getModes())
 									if (!Profile.defaultMode.equals(p))
 										comboBox.addItem(p);
 								comboBox.setAction(new JComboBoxSetPropertyAction(m));
@@ -763,7 +762,8 @@ public class EditActionsDialog extends JDialog {
 							} else
 								throw new UnsupportedOperationException(getClass().getName()
 										+ ": GUI representation implementation missing for " + clazz.getName());
-						} catch (final Exception e1) {
+						} catch (final ClassNotFoundException | NoSuchMethodException | SecurityException
+								| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
 							log.log(Logger.Level.ERROR, e1.getMessage(), e1);
 						}
 					}

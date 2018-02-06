@@ -24,7 +24,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -133,7 +132,6 @@ public class Input {
 	private static Controller cachedController;
 	private static Component[] cachedComponents;
 	public static final int MAX_N_BUTTONS = 128;
-	private static Profile profile;
 	private static EnumMap<VirtualAxis, Integer> axis = new EnumMap<>(VirtualAxis.class);
 
 	public static EnumMap<VirtualAxis, Integer> getAxis() {
@@ -186,10 +184,6 @@ public class Input {
 		return controllers;
 	}
 
-	public static Profile getProfile() {
-		return profile;
-	}
-
 	public static boolean isDualShock4Controller(final Controller controller) {
 		if (controller != null)
 			for (final String s : DUAL_SHOCK_4_CONTROLLER_NAMES)
@@ -214,69 +208,9 @@ public class Input {
 		return newValue;
 	}
 
-	public static boolean setProfile(final Profile profile, final Controller controller) {
-		if (controller == null)
-			return false;
-		else {
-			for (final String s : profile.getComponentToModeActionMap().keySet()) {
-				boolean componentFound = false;
-
-				for (final Component c : getComponents(controller))
-					if (s.equals(c.getName())) {
-						componentFound = true;
-						break;
-					}
-
-				if (!componentFound)
-					return false;
-			}
-
-			for (final Mode m : profile.getModes()) {
-				for (final String s : m.getComponentToActionsMap().keySet()) {
-					boolean componentFound = false;
-
-					for (final Component c : getComponents(controller))
-						if (s.equals(c.getName())) {
-							componentFound = true;
-							break;
-						}
-
-					if (!componentFound)
-						return false;
-				}
-
-				class ActionComparator implements Comparator<IAction> {
-					@Override
-					public int compare(final IAction o1, final IAction o2) {
-						if (o1 instanceof IButtonToAction && o2 instanceof IButtonToAction) {
-							final IButtonToAction buttonToAction1 = (IButtonToAction) o1;
-							final IButtonToAction buttonToAction2 = (IButtonToAction) o2;
-
-							final boolean o1IsLongPress = buttonToAction1.isLongPress();
-							final boolean o2IsLongPress = buttonToAction2.isLongPress();
-
-							if (o1IsLongPress && !o2IsLongPress)
-								return -1;
-							else if (!o1IsLongPress && o2IsLongPress)
-								return 1;
-							else
-								return 0;
-						} else
-							return 0;
-					}
-				}
-
-				for (final List<IAction> actions : m.getComponentToActionsMap().values())
-					Collections.sort(actions, new ActionComparator());
-			}
-
-			Input.profile = profile;
-			return true;
-		}
-	}
-
 	private final Main main;
 	private final Controller controller;
+	private Profile profile;
 	private OutputThread outputThread;
 	private boolean[] buttons;
 	private volatile int cursorDeltaX = 5;
@@ -438,6 +372,10 @@ public class Input {
 		return outputThread;
 	}
 
+	public Profile getProfile() {
+		return profile;
+	}
+
 	public int getScrollClicks() {
 		return scrollClicks;
 	}
@@ -481,7 +419,7 @@ public class Input {
 				final LinkedList<ButtonToModeAction> buttonToModeActionStack = ButtonToModeAction
 						.getButtonToModeActionStack();
 				for (int i = 1; i < buttonToModeActionStack.size(); i++) {
-					actions = buttonToModeActionStack.get(i).getMode().getComponentToActionsMap().get(c.getName());
+					actions = buttonToModeActionStack.get(i).getMode(this).getComponentToActionsMap().get(c.getName());
 
 					if (actions != null)
 						break;
@@ -581,6 +519,62 @@ public class Input {
 
 	public void setOutputThread(final OutputThread outputThread) {
 		this.outputThread = outputThread;
+	}
+
+	public boolean setProfile(final Profile profile, final Controller controller) {
+		if (controller == null)
+			return false;
+		else {
+			for (final String s : profile.getComponentToModeActionMap().keySet()) {
+				boolean componentFound = false;
+
+				for (final Component c : getComponents(controller))
+					if (s.equals(c.getName())) {
+						componentFound = true;
+						break;
+					}
+
+				if (!componentFound)
+					return false;
+			}
+
+			for (final Mode m : profile.getModes()) {
+				for (final String s : m.getComponentToActionsMap().keySet()) {
+					boolean componentFound = false;
+
+					for (final Component c : getComponents(controller))
+						if (s.equals(c.getName())) {
+							componentFound = true;
+							break;
+						}
+
+					if (!componentFound)
+						return false;
+				}
+
+				for (final List<IAction> actions : m.getComponentToActionsMap().values())
+					Collections.sort(actions, (o1, o2) -> {
+						if (o1 instanceof IButtonToAction && o2 instanceof IButtonToAction) {
+							final IButtonToAction buttonToAction1 = (IButtonToAction) o1;
+							final IButtonToAction buttonToAction2 = (IButtonToAction) o2;
+
+							final boolean o1IsLongPress = buttonToAction1.isLongPress();
+							final boolean o2IsLongPress = buttonToAction2.isLongPress();
+
+							if (o1IsLongPress && !o2IsLongPress)
+								return -1;
+							else if (!o1IsLongPress && o2IsLongPress)
+								return 1;
+							else
+								return 0;
+						} else
+							return 0;
+					});
+			}
+
+			this.profile = profile;
+			return true;
+		}
 	}
 
 	public void setScrollClicks(final int scrollClicks) {
